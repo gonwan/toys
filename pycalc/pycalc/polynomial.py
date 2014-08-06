@@ -34,7 +34,7 @@ class Polynomial(object):
         self.terms = res
     '''
 
-    # run time of '(a+b+c+d+e)^10' changed from 4.5s to 0.25s by use this version of _compact()
+    # run time of '(a+b+c+d+e)^10' changed from 4.5s to 0.25s by using this version of _compact()
     def _compact(self):
         if len(self) == 0:
             self.terms.append(term.Term())

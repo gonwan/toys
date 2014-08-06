@@ -59,10 +59,10 @@ class Parser(object):
         while i < llen:
             if line[i] == ' ':
                 pass
-            elif line[i] in Parser.ops:
+            elif line[i] in Parser.ops and line[i] != '(':
                 res.append(line[i])
-            elif line[i].islower():
-                if (len(res) != 0) and (not res[-1] in Parser.ops):
+            elif line[i].islower() or line[i] == '(':
+                if (len(res) != 0) and (res[-1] == ')' or not res[-1] in Parser.ops):
                     res.append('*') # add mannually
                 res.append(line[i])
             elif line[i].isdigit():
@@ -97,6 +97,8 @@ class Parser(object):
                     while len(opstack) != 0:
                         t = opstack[-1]
                         if t == '(':
+                            break
+                        if obj == '^' and t == '^': # '^' is also special
                             break
                         if Parser.priority(obj) < Parser.priority(t):
                             break
