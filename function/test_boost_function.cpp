@@ -2,7 +2,6 @@
 #include <boost/bind.hpp>
 #include <iostream>
 using namespace std;
-using namespace boost;
 
 
 void a() {
@@ -73,8 +72,8 @@ int main()
     boost::function<void()> m1 = boost::bind(&TT::foo, &tt);
     //boost::function0<void> m2 = &TT::foo; /* not working */
     boost::function1<void, TT *> m3 = &TT::foo;
-#if 0
-	/* mem_fn */
+#if __cplusplus >= 201103L
+    /* mem_fn */
     TT t1;
     const TT t2;
     auto _m = boost::mem_fn(&TT::foo);

@@ -8,7 +8,7 @@ private:
     F f_;
 public:
     typedef R result_type;
-    explicit GL_MEMFN_NAME(F f): f_(f) { }
+    explicit GL_MEMFN_NAME(F f): f_(f) { } /* compile error here if type mismatch */
     template <typename U>
     R operator()(U *u GL_MEMFN_COMMA GL_MEMFN_PARAMS) const {
         return (u->*f_)(GL_MEMFN_ARGS);

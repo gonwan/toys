@@ -153,7 +153,7 @@ private:
         typedef typename get_function_tag<F>::type tag;
         typedef typename detail::get_function_invoker1<tag, F, R, A1>::invoker invoker;
         m_func.assign(f, tag());
-        m_invoker = &invoker::invoke;
+        m_invoker = &invoker::invoke; /* compile error here if type mismatch */
     }
 
     functor m_func;

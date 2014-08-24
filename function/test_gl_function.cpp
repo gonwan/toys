@@ -2,7 +2,6 @@
 #include "function.hpp"
 #include "reference_wrapper.hpp"
 using namespace std;
-using namespace gl;
 
 
 void foo0() {
@@ -86,17 +85,17 @@ struct spam2 {
 
 void test_function_ptr() {
 #if 1
-    function0<void> f0 = foo0;
+    gl::function0<void> f0 = foo0;
     f0();
-    function1<void, int> f1 = foo1;
+    gl::function1<void, int> f1 = foo1;
     f1(1);
-    function2<void, int, int> f2 = foo2;
+    gl::function2<void, int, int> f2 = foo2;
     f2(1, 2);
-    function<void()> ff0 = foo0;
+    gl::function<void()> ff0 = foo0;
     ff0();
-    function<void(int)> ff1 = foo1;
+    gl::function<void(int)> ff1 = foo1;
     ff1(1);
-    function<void(int,int)> ff2 = foo2;
+    gl::function<void(int,int)> ff2 = foo2;
     ff2(1, 2);
     /* leak? */
     f0 = ff0;
@@ -107,17 +106,17 @@ void test_function_ptr() {
 
 void test_function_obj() {
 #if 1
-    function0<void> f0 = bar0();
+    gl::function0<void> f0 = bar0();
     f0();
-    function1<void, int> f1 = bar1();
+    gl::function1<void, int> f1 = bar1();
     f1(1);
-    function2<void, int, int> f2 = bar2();
+    gl::function2<void, int, int> f2 = bar2();
     f2(1, 2);
-    function<void()> ff0 = bar0();
+    gl::function<void()> ff0 = bar0();
     ff0();
-    function<void(int)> ff1 = bar1();
+    gl::function<void(int)> ff1 = bar1();
     ff1(1);
-    function<void(int,int)> ff2 = bar2();
+    gl::function<void(int,int)> ff2 = bar2();
     ff2(1, 2);
     /* leak? */
     f0 = ff0;
@@ -131,17 +130,17 @@ void test_function_obj_ref() {
     egg0 e0;
     egg1 e1;
     egg2 e2;
-    function0<void> f0 = gl::ref(e0);
+    gl::function0<void> f0 = gl::ref(e0);
     f0();
-    function1<void, int> f1 = gl::ref(e1);
+    gl::function1<void, int> f1 = gl::ref(e1);
     f1(1);
-    function2<void, int, int> f2 = gl::ref(e2);
+    gl::function2<void, int, int> f2 = gl::ref(e2);
     f2(1, 2);
-    function<void()> ff0 = gl::ref(e0);
+    gl::function<void()> ff0 = gl::ref(e0);
     ff0();
-    function<void(int)> ff1 = gl::ref(e1);
+    gl::function<void(int)> ff1 = gl::ref(e1);
     ff1(1);
-    function<void(int,int)> ff2 = gl::ref(e2);
+    gl::function<void(int,int)> ff2 = gl::ref(e2);
     ff2(1, 2);
     /* leak? */
     f0 = ff0;
@@ -153,14 +152,14 @@ void test_function_obj_ref() {
 void test_member_funciton_ptr() {
 #if 1
     spam0 sp0;
-    function1<void, spam0*> f1 = &spam0::print;
+    gl::function1<void, spam0*> f1 = &spam0::print;
     f1(&sp0);
     spam1 sp1;
-    function2<void, spam1*, int> f2 = &spam1::print;
+    gl::function2<void, spam1*, int> f2 = &spam1::print;
     f2(&sp1, 1);
-    function<void(spam0*)> ff1 = &spam0::print;
+    gl::function<void(spam0*)> ff1 = &spam0::print;
     ff1(&sp0);
-    function<void(spam1*,int)> ff2 = &spam1::print;
+    gl::function<void(spam1*,int)> ff2 = &spam1::print;
     ff2(&sp1, 1);
     /* leak? */
     f1 = ff1;

@@ -175,7 +175,7 @@ private:
         typedef typename get_function_tag<F>::type tag;
         typedef typename detail::GL_FUNC_GET_FUNCTION_INVOKER<tag, F, R GL_FUNC_COMMA GL_FUNC_TEMPLATE_ARGS>::invoker invoker;
         m_func.assign(f, tag());
-        m_invoker = &invoker::invoke;
+        m_invoker = &invoker::invoke; /* compile error here if type mismatch */
     }
 
     functor m_func;
