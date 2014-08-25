@@ -508,7 +508,7 @@ public:
 
 /* 9 */
 template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
-class list9: private list7<A1, A2, A3, A4, A5, A6, A7> {
+class list9: private list8<A1, A2, A3, A4, A5, A6, A7, A8> {
 
 protected:
 

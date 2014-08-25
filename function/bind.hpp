@@ -23,7 +23,7 @@ public:
 
     typedef typename detail::result_trait<R, F>::type result_type;
 
-    bind_t(F f, L const & l): f_(f), l_(l) { }
+    bind_t(F f, const L &l): f_(f), l_(l) { }
 
     /*
      * A large number of operator() overload is removed as compared to boost,
