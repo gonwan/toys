@@ -72,12 +72,16 @@ int main()
     boost::function<void()> m1 = boost::bind(&TT::foo, &tt);
     //boost::function0<void> m2 = &TT::foo; /* not working */
     boost::function1<void, TT *> m3 = &TT::foo;
-#if __cplusplus >= 201103L
     /* mem_fn */
     TT t1;
     const TT t2;
+#if __cplusplus >= 201103L
     auto _m = boost::mem_fn(&TT::foo);
     auto _mc = boost::mem_fn(&TT::foo2);
+#else
+    boost::_mfi::mf0<void, TT> _m = boost::mem_fn(&TT::foo);
+    boost::_mfi::cmf0<void, TT> _mc = boost::mem_fn(&TT::foo2);
+#endif
     _m(&t1);
     //_m(&t2); /* not working */
     _m(t1);
@@ -86,6 +90,5 @@ int main()
     _mc(&t2);
     _mc(t1);
     _mc(t2);
-#endif
     return 0;
 }

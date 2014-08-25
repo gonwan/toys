@@ -14,7 +14,7 @@ inline T* addressof(T &t) {
 }
 
 
-template <class T>
+template <typename T>
 class reference_wrapper
 {
 public:
@@ -27,12 +27,12 @@ private:
     T *t_;
 };
 
-template <class T>
-reference_wrapper<T> ref(T& t) {
+template <typename T>
+reference_wrapper<T> ref(T &t) {
     return reference_wrapper<T>(t);
 }
 
-template<class T>
+template <typename T>
 reference_wrapper<const T> cref(const T &t) {
     return reference_wrapper<const T>(t);
 }
