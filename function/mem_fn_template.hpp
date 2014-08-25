@@ -1,6 +1,9 @@
 namespace gl {
 
 
+namespace detail {
+
+
 template <class R, class T GL_MEMFN_COMMA GL_MEMFN_TEMPLATE_PARAMS>
 class GL_MEMFN_NAME {
 private:
@@ -19,11 +22,14 @@ public:
     }
 };
 
-template<class R, class T GL_MEMFN_COMMA GL_MEMFN_TEMPLATE_PARAMS>
+template <class R, class T GL_MEMFN_COMMA GL_MEMFN_TEMPLATE_PARAMS>
 GL_MEMFN_NAME<R, T GL_MEMFN_COMMA GL_MEMFN_TEMPLATE_ARGS> mem_fn(R (T::*f)(GL_MEMFN_TEMPLATE_ARGS) GL_CONST_MARK)
 {
     return GL_MEMFN_NAME<R, T GL_MEMFN_COMMA GL_MEMFN_TEMPLATE_ARGS>(f);
 }
+
+
+} /* detail */
 
 
 } /* gl */

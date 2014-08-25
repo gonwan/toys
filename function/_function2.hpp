@@ -28,35 +28,35 @@ namespace detail {
             return f(a1, a2);
         }
     };
-    template<typename F, typename A1, typename A2>
+    template <typename F, typename A1, typename A2>
     struct function_void_function_obj_invoker2 {
         static void invoke(const functor &function_obj_ptr, A1 a1, A2 a2) {
             F *f = reinterpret_cast<F *>(function_obj_ptr.u.obj_ptr);
             (*f)(a1, a2);
         }
     };
-    template<typename F, typename R, typename A1, typename A2>
+    template <typename F, typename R, typename A1, typename A2>
     struct function_function_obj_invoker2 {
         static R invoke(const functor &function_obj_ptr, A1 a1, A2 a2) {
             F *f = reinterpret_cast<F *>(function_obj_ptr.u.obj_ptr);
             return (*f)(a1, a2);
         }
     };
-    template<typename F, typename A1, typename A2>
+    template <typename F, typename A1, typename A2>
     struct function_void_member_function_invoker2 {
         static void invoke(const functor &member_ptr, A1 a1, A2 a2) {
             F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
             mem_fn(*f)(a1, a2);
         }
     };
-    template<typename F, typename R, typename A1, typename A2>
+    template <typename F, typename R, typename A1, typename A2>
     struct function_member_function_invoker2 {
         static R invoke(const functor &member_ptr, A1 a1, A2 a2) {
             F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
             return mem_fn(*f)(a1, a2);
         }
     };
-    template<typename F, typename A1, typename A2>
+    template <typename F, typename A1, typename A2>
     struct function_void_function_obj_ref_invoker2 {
         static void invoke(const functor &function_obj_ref_ptr, A1 a1, A2 a2) {
             typedef typename F::type _F;
@@ -64,7 +64,7 @@ namespace detail {
             (*f)(a1, a2);
         }
     };
-    template<typename F, typename R, typename A1, typename A2>
+    template <typename F, typename R, typename A1, typename A2>
     struct function_function_obj_ref_invoker2 {
         static R invoke(const functor &function_obj_ref_ptr, A1 a1, A2 a2) {
             typedef typename F::type _F;

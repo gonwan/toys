@@ -13,57 +13,84 @@ namespace gl {
 
 
 namespace detail {
-template<typename T> class value
-{
+
+
+/* forward declaration */
+template <typename R, typename F, typename L> class bind_t;
+
+/* to hold return type */
+template <typename R>
+struct type { };
+
+/* result trait */
+struct unspecified { };
+
+template <class R, class F>
+struct result_trait {
+    typedef R type;
+};
+
+template <typename F>
+struct result_trait<unspecified, F> {
+    typedef typename F::result_type type;
+};
+
+template <typename F>
+struct result_trait<unspecified, reference_wrapper<F> > {
+    typedef typename F::result_type type;
+};
+
+/* value type */
+template <typename T>
+class value {
 public:
-
-    value(T const & t): t_(t) {}
-
-    T & get() { return t_; }
-    T const & get() const { return t_; }
-
-    bool operator==(value const & rhs) const
-    {
+    value(T const & t): t_(t) { }
+    T &get() { return t_; }
+    const T &get() const { return t_; }
+    bool operator==(value const & rhs) const {
         return t_ == rhs.t_;
     }
-
 private:
-
     T t_;
 };
 
-
-template<typename R, typename F, typename L> class bind_t;
-
-
-
-
-
-
-
-template <typename F>
+/* unwrapper */
 struct unwrapper {
-    static inline F & unwrap( F & f, long )
-    {
+    template <typename F>
+    static inline F &unwrap(F &f) {
         return f;
     }
-
-    template<typename F2> static inline F2 & unwrap( reference_wrapper<F2> rf, int )
+    template <typename F>
+    static inline F &unwrap(reference_wrapper<F> f)
     {
-        return rf.get();
+        return f.get();
     }
-
-    /*template<typename R, typename T> static inline _mfi::dm<R, T> unwrap( R T::* pm, int )
-    {
-        return _mfi::dm<R, T>( pm );
-    }*/
 };
 
-template <typename R>
-struct type {
-
+/* add_value trait */
+template <typename T>
+struct add_value {
+    typedef value<T> type;
 };
 
+template <typename T>
+struct add_value<value<T> > {
+    typedef value<T> type;
+};
+
+template <int I> struct add_value<arg<I> > {
+    typedef arg<I> type;
+};
+
+template <typename T>
+struct add_value<reference_wrapper<T> > {
+    typedef reference_wrapper<T> type;
+};
+
+template <typename R, typename F, typename L>
+struct add_value<bind_t<R, F, L> > {
+    typedef bind_t<R, F, L> type;
+};
 
 
 /* 0 */
@@ -89,45 +116,36 @@ public:
         return v.get();
     }
 
-    //template <typename R, typename F, typename L>
-    //typename result_traits<R, F>::type operator[] (bind_t<R, F, L> & b) const { return b.eval(*this); }
-
-    //template <typename R, typename F, typename L>
-    //typename result_traits<R, F>::type operator[] (bind_t<R, F, L> const & b) const { return b.eval(*this); }
+    /* nested bind subexpressions share the placeholders */
+    /* bind_t is supposed to be const, no non-const overload here. */
+    template <typename R, typename F, typename L>
+    typename detail::result_trait<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
 
     /* no partial specialization for functions, so simply use overload */
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &) {
-        return unwrapper<F>::unwrap(f, 0)();
+        return unwrapper::unwrap<F>(f)();
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &) const {
-        return unwrapper<const F>::unwrap(f, 0)();
+        return unwrapper::unwrap<const F>(f)();
     }
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &) {
-        unwrapper<F>::unwrap(f, 0)();
+        unwrapper::unwrap<F>(f)();
     }
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &) const {
-        unwrapper<F const>::unwrap(f, 0)();
-    }
-
-    /* visitor */
-    /*template<typename V> void accept(V &) const
-    {
-    }*/
-
-    bool operator==(list0 const &) const {
-        return true;
+        unwrapper::unwrap<const F>(f)();
     }
 
 };
 
 /* 1 */
 template <typename A1>
-class list1 : private list0
-{
+class list1 : private list0 {
 
 protected:
 
@@ -146,40 +164,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_]);
+        return unwrapper::unwrap<F>(f)(a[a1_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_]);
+        unwrapper::unwrap<F>(f)(a[a1_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<F const>::unwrap(f, 0)(a[a1_]);
-    }
-
-    template <typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list1 const & rhs) const
-    {
-        //return ref_compare(base_type::a1_, rhs.a1_, 0);
+        unwrapper::unwrap<const F>(f)(a[a1_]);
     }
 
 };
 
 /* 2 */
 template <typename A1, typename A2>
-class list2: private list1<A1>
-{
+class list2: private list1<A1> {
+
 protected:
 
     typedef list1<A1> base_type;
@@ -199,45 +207,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        /* a is list1 */
-        /*std::cout << typeid(base_type::a1_).name() << std::endl;
-        std::cout << typeid(a2_).name() << std::endl;
-        std::cout << typeid(a[base_type::a1_]).name() << std::endl;
-        std::cout << typeid(a[a2_]).name() << std::endl;*/
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list2 const & rhs) const
-    {
-        //return ref_compare(base_type::a1_, rhs.a1_, 0) && ref_compare(base_type::a2_, rhs.a2_, 0);
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_]);
     }
 
 };
 
 /* 3 */
 template <typename A1, typename A2, typename A3>
-class list3: private list2<A1, A2>
-{
+class list3: private list2<A1, A2> {
+
 protected:
 
     typedef list2<A1, A2> base_type;
@@ -258,40 +251,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list3 const & rhs) const
-    {
-        return false;
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_]);
     }
 
 };
 
 /* 4 */
 template <typename A1, typename A2, typename A3, typename A4>
-class list4: private list3<A1, A2, A3>
-{
+class list4: private list3<A1, A2, A3> {
+
 protected:
 
     typedef list3<A1, A2, A3> base_type;
@@ -313,40 +296,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list4 const & rhs) const
-    {
-        return false;
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_]);
     }
 
 };
 
 /* 5 */
 template <typename A1, typename A2, typename A3, typename A4, typename A5>
-class list5: private list4<A1, A2, A3, A4>
-{
+class list5: private list4<A1, A2, A3, A4> {
+
 protected:
 
     typedef list4<A1, A2, A3, A4> base_type;
@@ -369,40 +342,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list5 const & rhs) const
-    {
-        return false;
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_]);
     }
 
 };
 
 /* 6 */
 template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-class list6: private list5<A1, A2, A3, A4, A5>
-{
+class list6: private list5<A1, A2, A3, A4, A5> {
+
 protected:
 
     typedef list5<A1, A2, A3, A4, A5> base_type;
@@ -426,40 +389,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list6 const & rhs) const
-    {
-        return false;
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
     }
 
 };
 
 /* 7 */
 template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-class list7: private list6<A1, A2, A3, A4, A5, A6>
-{
+class list7: private list6<A1, A2, A3, A4, A5, A6> {
+
 protected:
 
     typedef list6<A1, A2, A3, A4, A5, A6> base_type;
@@ -484,40 +437,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list7 const & rhs) const
-    {
-        return false;
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_]);
     }
 
 };
 
 /* 8 */
 template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-class list8: private list7<A1, A2, A3, A4, A5, A6, A7>
-{
+class list8: private list7<A1, A2, A3, A4, A5, A6, A7> {
+
 protected:
 
     typedef list7<A1, A2, A3, A4, A5, A6, A7> base_type;
@@ -543,40 +486,30 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list8 const & rhs) const
-    {
-        return false;
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
     }
 
 };
 
 /* 9 */
 template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
-class list9: private list7<A1, A2, A3, A4, A5, A6, A7>
-{
+class list9: private list7<A1, A2, A3, A4, A5, A6, A7> {
+
 protected:
 
     typedef list8<A1, A2, A3, A4, A5, A6, A7, A8> base_type;
@@ -603,38 +536,117 @@ public:
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
+        return unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
     }
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
+        return unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
-        unwrapper<F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
+        unwrapper::unwrap<F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
     }
 
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        unwrapper<const F>::unwrap(f, 0)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
-    }
-
-    template<typename V> void accept(V & v) const
-    {
-        //base_type::accept(v);
-    }
-
-    bool operator==(list9 const & rhs) const
-    {
-        return false;
+        unwrapper::unwrap<const F>(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_], a[a9_]);
     }
 
 };
 
 
+/* list helpers */
+template <typename A1>
+struct list_helper1 {
+    typedef typename add_value<A1>::type B1;
+    typedef list1<B1> type;
+};
 
+template <typename A1, typename A2>
+struct list_helper2 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef list2<B1, B2> type;
+};
+
+template <typename A1, typename A2, typename A3>
+struct list_helper3 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef list3<B1, B2, B3> type;
+};
+
+template <typename A1, typename A2, typename A3, typename A4>
+struct list_helper4 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef typename add_value<A4>::type B4;
+    typedef list4<B1, B2, B3, B4> type;
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5>
+struct list_helper5 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef typename add_value<A4>::type B4;
+    typedef typename add_value<A5>::type B5;
+    typedef list5<B1, B2, B3, B4, B5> type;
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
+struct list_helper6 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef typename add_value<A4>::type B4;
+    typedef typename add_value<A5>::type B5;
+    typedef typename add_value<A6>::type B6;
+    typedef list6<B1, B2, B3, B4, B5, B6> type;
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
+struct list_helper7 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef typename add_value<A4>::type B4;
+    typedef typename add_value<A5>::type B5;
+    typedef typename add_value<A6>::type B6;
+    typedef typename add_value<A7>::type B7;
+    typedef list7<B1, B2, B3, B4, B5, B6, B7> type;
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+struct list_helper8 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef typename add_value<A4>::type B4;
+    typedef typename add_value<A5>::type B5;
+    typedef typename add_value<A6>::type B6;
+    typedef typename add_value<A7>::type B7;
+    typedef typename add_value<A8>::type B8;
+    typedef list8<B1, B2, B3, B4, B5, B6, B7, B8> type;
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
+struct list_helper9 {
+    typedef typename add_value<A1>::type B1;
+    typedef typename add_value<A2>::type B2;
+    typedef typename add_value<A3>::type B3;
+    typedef typename add_value<A4>::type B4;
+    typedef typename add_value<A5>::type B5;
+    typedef typename add_value<A6>::type B6;
+    typedef typename add_value<A7>::type B7;
+    typedef typename add_value<A8>::type B8;
+    typedef typename add_value<A9>::type B9;
+    typedef list9<B1, B2, B3, B4, B5, B6, B7, B8, B9> type;
+};
 
 
 } /* detail */

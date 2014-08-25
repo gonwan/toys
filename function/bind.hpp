@@ -2,31 +2,32 @@
 #define _GL_BIND_HPP
 
 
+#include "bind_list.hpp"
+
+
 namespace gl {
 
 
 namespace detail {
 
 
+/*
+ * The difference between gl::bind() and gl::function:
+ * For gl::function, the parameter types of the invoker callback are specified explicitly in template arguments.
+ * While for gl::bind(), the parameter types are not specified explicitly in most cases. They are deducted.
+ */
 template <class R, class F, class L>
 class bind_t {
 
 public:
 
-    typedef bind_t this_type;
-    typedef R result_type;
+    typedef typename detail::result_trait<R, F>::type result_type;
 
-    bind_t(F f, L const & l): f_(f), l_(l) {}
-
-    /*
-     * For gl::function, the parameter types of the invoker callback are specified explicitly in template arguments.
-     * While for gl::bind(), the parameter types are not specified explicitly in most cases. They are deducted.
-     */
+    bind_t(F f, L const & l): f_(f), l_(l) { }
 
     /*
-     *
      * A large number of operator() overload is removed as compared to boost,
-     * since they do not enumerate all possible compositions of arguments.
+     * since they do not enumerate all possible combination of arguments.
      * Use gl::ref() for reference and gl::cref() for const reference explicitly.
      */
     result_type operator()() const {
@@ -88,26 +89,9 @@ public:
         return l_(type<result_type>(), f_, a, 0);
     }
 
-    template <class A>
-    result_type eval(A &a) {
-        return l_(type<result_type>(), f_, a, 0);
-    }
-
-    template <class A>
+    template <typename A>
     result_type eval(A &a) const {
         return l_(type<result_type>(), f_, a, 0);
-    }
-
-    template<class V> void accept(V & v) const {
-#if !defined( BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP ) && !defined( __BORLANDC__ )
-        using boost::visit_each;
-#endif
-        BOOST_BIND_VISIT_EACH(v, f_, 0);
-        l_.accept(v);
-    }
-
-    bool compare(this_type const & rhs) const {
-        return ref_compare(f_, rhs.f_, 0) && l_ == rhs.l_;
     }
 
 private:
@@ -122,6 +106,11 @@ private:
 
 
 } /* gl */
+
+
+#include "bind_fn.hpp"
+#include "bind_mem_fn.hpp"
+#include "bind_fn_obj.hpp"
 
 
 #endif

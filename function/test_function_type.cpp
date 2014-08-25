@@ -3,7 +3,7 @@
 using namespace std;
 
 
-template<typename Sig>
+template <typename Sig>
 struct function;
 
 template <typename R>

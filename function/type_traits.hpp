@@ -94,7 +94,7 @@ typedef integral_constant<bool, false> false_type;
 template <typename T, typename U>
 struct is_same : false_type { };
 
-template<typename T>
+template <typename T>
 struct is_same<T, T> : true_type { };
 
 /* is_void */
@@ -180,7 +180,7 @@ struct is_member_function_pointer_helper : false_type { };
 template <typename T, typename U>
 struct is_member_function_pointer_helper<T U::*> : is_function<T> { };
 
-template<typename T>
+template <typename T>
 struct is_member_function_pointer : is_member_function_pointer_helper<typename remove_cv<T>::type> { };
 
 
