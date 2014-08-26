@@ -139,8 +139,8 @@ struct is_reference<T &> : true_type { };
 template <typename T>
 struct is_function_helper : false_type { };
 
-template <typename R, typename... A>
-struct is_function_helper<R (A...)> : true_type { };
+template <typename R, typename... TArgs>
+struct is_function_helper<R (TArgs...)> : true_type { };
 
 template <typename T>
 struct is_function : is_function_helper<typename remove_cv<T>::type> { };

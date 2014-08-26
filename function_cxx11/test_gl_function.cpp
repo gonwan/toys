@@ -150,7 +150,7 @@ void test_function_obj_ref() {
 }
 
 void test_member_funciton_ptr() {
-#if 0
+#if 1
     spam0 sp0;
     gl::function<void(spam0*)> f1 = &spam0::print;
     f1(&sp0);
