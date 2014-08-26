@@ -24,7 +24,7 @@ struct type { };
 /* result trait */
 struct unspecified { };
 
-template <class R, class F>
+template <typename R, typename F>
 struct result_traits {
     typedef R type;
 };
@@ -102,12 +102,12 @@ public:
 
     list0() { }
 
-    template <class T>
+    template <typename T>
     T &operator[](value<T> &v) const {
         return v.get();
     }
 
-    template <class T>
+    template <typename T>
     const T &operator[](const value<T> &v) const {
         return v.get();
     }

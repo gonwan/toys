@@ -5,7 +5,7 @@
 namespace gl {
 
 
-template <class T>
+template <typename T>
 struct is_placeholder {
     const static int value = 0;
 };

@@ -7,14 +7,6 @@
 #include "reference_wrapper.hpp"
 
 
-#define GL_STRINGIZE(X)     GL_DO_STRINGIZE(X)
-#define GL_DO_STRINGIZE(X)  #X
-
-#define GL_JOIN(X, Y)       GL_DO_JOIN( X, Y )
-#define GL_DO_JOIN(X, Y)    GL_DO_JOIN2(X,Y)
-#define GL_DO_JOIN2(X, Y)   X ## Y
-
-
 namespace gl {
 
 

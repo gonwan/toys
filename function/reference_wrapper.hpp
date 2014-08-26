@@ -15,8 +15,7 @@ inline T* addressof(T &t) {
 
 
 template <typename T>
-class reference_wrapper
-{
+class reference_wrapper {
 public:
     typedef T type;
     explicit reference_wrapper(T &t): t_(addressof(t)) { }

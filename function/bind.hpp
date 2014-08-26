@@ -16,7 +16,7 @@ namespace detail {
  * For gl::function, the parameter types of the invoker callback are specified explicitly in template arguments.
  * While for gl::bind(), the parameter types are not specified explicitly in most cases. They are deducted.
  */
-template <class R, class F, class L>
+template <typename R, typename F, typename L>
 class bind_t {
 
 public:
