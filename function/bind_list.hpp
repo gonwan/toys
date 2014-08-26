@@ -14,7 +14,8 @@ namespace detail {
 
 
 /* forward declaration */
-template <typename R, typename F, typename L> class bind_t;
+template <typename R, typename F, typename L>
+class bind_t;
 
 /* to hold return type */
 template <typename R>
@@ -24,17 +25,17 @@ struct type { };
 struct unspecified { };
 
 template <class R, class F>
-struct result_trait {
+struct result_traits {
     typedef R type;
 };
 
 template <typename F>
-struct result_trait<unspecified, F> {
+struct result_traits<unspecified, F> {
     typedef typename F::result_type type;
 };
 
 template <typename F>
-struct result_trait<unspecified, reference_wrapper<F> > {
+struct result_traits<unspecified, reference_wrapper<F> > {
     typedef typename F::result_type type;
 };
 
@@ -118,9 +119,14 @@ public:
     }
 
     /* nested bind subexpressions share the placeholders */
-    /* bind_t is supposed to be const, no non-const overload here. */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
     template <typename R, typename F, typename L>
-    typename detail::result_trait<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
         return b.eval(*this);
     }
 
@@ -161,6 +167,18 @@ public:
 
     A1 operator[](arg<1>) const {
         return a1_;
+    }
+
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
     }
 
     template <typename R, typename F, typename A>
@@ -206,6 +224,18 @@ public:
         return a2_;
     }
 
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
         return unwrapper<F>::unwrap(f)(a[a1_], a[a2_]);
@@ -248,6 +278,18 @@ public:
 
     A3 operator[](arg<3>) const {
         return a3_;
+    }
+
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
     }
 
     template <typename R, typename F, typename A>
@@ -295,6 +337,18 @@ public:
         return a4_;
     }
 
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
         return unwrapper<F>::unwrap(f)(a[a1_], a[a2_], a[a3_], a[a4_]);
@@ -339,6 +393,18 @@ public:
 
     A5 operator[](arg<5>) const {
         return a5_;
+    }
+
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
     }
 
     template <typename R, typename F, typename A>
@@ -388,6 +454,18 @@ public:
         return a6_;
     }
 
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
         return unwrapper<F>::unwrap(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_]);
@@ -434,6 +512,18 @@ public:
 
     A7 operator[](arg<7>) const {
         return a7_;
+    }
+
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
     }
 
     template <typename R, typename F, typename A>
@@ -485,6 +575,18 @@ public:
         return a8_;
     }
 
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
         return unwrapper<F>::unwrap(f)(a[a1_], a[a2_], a[a3_], a[a4_], a[a5_], a[a6_], a[a7_], a[a8_]);
@@ -533,6 +635,18 @@ public:
 
     A8 operator[](arg<9>) const {
         return a9_;
+    }
+
+    /* nested bind subexpressions share the placeholders */
+    /* These 2 functions use this pointer, they should be copied into every list class... */
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](bind_t<R, F, L> &b) const {
+        return b.eval(*this);
+    }
+
+    template <typename R, typename F, typename L>
+    typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
+        return b.eval(*this);
     }
 
     template <typename R, typename F, typename A>

@@ -24,7 +24,7 @@ struct c0 {
 struct c1 {
     typedef void result_type;
     void operator()(int) const {
-        cout << "c1(int)" << endl;
+        cout << "c1(int)const" << endl;
     }
 };
 
@@ -33,6 +33,9 @@ struct c2 {
     c2() { }
     void operator()(int,int) {
         cout << "c2(int,int)" << endl;
+    }
+    void operator()(int,int) const {
+        cout << "c2(int,int)const" << endl;
     }
 private:
     c2(const c2&);
@@ -44,7 +47,7 @@ struct TT {
         cout << "TT::foo()" << endl;
     }
     void foo2(int) const {
-        cout << "TT::foo2(int)" << endl;
+        cout << "TT::foo2(int)const" << endl;
     }
 };
 
@@ -85,9 +88,43 @@ void test_function_obj() {
     f10(1);
     gl::function<void()> f11 = gl::bind(_c1, 1);
     f11();
-    /* gl::ref() */
+    /* gl::ref() and gl::cref() */
     gl::function<void(int,int)> f2 = gl::bind(gl::ref(_c2), _1, _2);
     f2(1, 2);
+    gl::function<void(int,int)> f2c = gl::bind(gl::cref(_c2), _1, _2);
+    f2c(1, 2);
+}
+
+void test_member_function() {
+    TT t1;
+    const TT t2;
+    gl::function<void(TT*)> f10 = gl::bind(&TT::foo, _1);
+    f10(&t1);
+    gl::function<void()> f11 = gl::bind(&TT::foo, &t1);
+    f11();
+    gl::function<void(const TT*,int)> f20 = gl::bind(&TT::foo2, _1, _2);
+    f20(&t2, 1);
+    gl::function<void(const TT*)> f21 = gl::bind(&TT::foo2, _1, 1);
+    f21(&t2);
+    gl::function<void(int)> f22 = gl::bind(&TT::foo2, &t2, _1);
+    f22(1);
+    gl::function<void()> f23 = gl::bind(&TT::foo2, &t2, 1);
+    f23();
+}
+
+void f(int a, int b, int c, int d) {
+    cout << a << ", " << b << ", " << c << ", " << d << endl;
+}
+
+int g(int i) {
+    return i;
+}
+
+void test_misc() {
+    gl::function<void(int,int,int,int)> f1 = gl::bind(f, _3, _4, 3, 4);
+    f1(1001, 1002, 1003, 1004); /* only 1003 and 1004 is used */
+    gl::function<void(int,int,int,int)> f2 = gl::bind(f, _3, gl::bind(g, _3), 5, 6);
+    f2(1001, 1002, 1003, 1004); /* nested bind subexpressions share the placeholders */
 }
 
 int main()
@@ -95,5 +132,7 @@ int main()
     test_internal();
     test_ref_parameters();
     test_function_obj();
+    test_member_function();
+    test_misc();
     return 0;
 }

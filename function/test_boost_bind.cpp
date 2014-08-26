@@ -27,7 +27,7 @@ struct c0 {
 struct c1 {
     typedef void result_type;
     void operator()(int) const {
-        cout << "c1(int)" << endl;
+        cout << "c1(int)const" << endl;
     }
 };
 
@@ -47,7 +47,7 @@ struct TT {
         cout << "TT::foo()" << endl;
     }
     void foo2(int) const {
-        cout << "TT::foo2(int)" << endl;
+        cout << "TT::foo2(int)const" << endl;
     }
 };
 
