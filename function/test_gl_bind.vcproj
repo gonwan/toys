@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="function"
-	ProjectGUID="{1177212C-975B-435F-838F-C9D38CDF0BCC}"
-	RootNamespace="function"
+	Name="test_gl_bind"
+	ProjectGUID="{8173D687-0742-40A2-9E36-6385FC3B7F4F}"
+	RootNamespace="test_gl_bind"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -175,7 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\test_gl_function.cpp"
+				RelativePath=".\test_gl_bind.cpp"
 				>
 			</File>
 		</Filter>
@@ -194,6 +194,30 @@
 			</File>
 			<File
 				RelativePath=".\_function2.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bind.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bind_fn.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bind_fn_obj.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bind_list.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bind_mem_fn.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bind_placeholder.hpp"
 				>
 			</File>
 			<File
