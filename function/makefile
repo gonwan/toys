@@ -1,16 +1,21 @@
 CC     := g++
 CFLAGS := -pedantic -Wall -Wextra
-OBJS   := test_gl_function.o
 LIBS   := -lstdc++
-PROG   := test_gl_function
+OBJS1  := test_gl_function.o
+OBJS2  := test_gl_bind.o
+PROG1  := test_gl_function
+PROG2  := test_gl_bind
 
-all: $(PROG)
+all: $(PROG1) $(PROG2)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(PROG): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(PROG) $(LIBS)
+$(PROG1): $(OBJS1)
+	$(CC) $(CFLAGS) $(OBJS1) -o $(PROG1) $(LIBS)
+
+$(PROG2): $(OBJS2)
+	$(CC) $(CFLAGS) $(OBJS2) -o $(PROG2) $(LIBS)
 
 check:
 	grep -n -P '\t' *.hpp *.cpp *.txt makefile || true
@@ -21,4 +26,4 @@ clean:
 	rm -f *~
 	rm -f *.o
 	rm -f *.bak
-	rm -f $(PROG)
+	rm -f $(PROG1) $(PROG2)

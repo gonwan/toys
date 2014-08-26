@@ -18,6 +18,9 @@
 namespace gl {
 
 
+namespace detail {
+
+
 template <typename T>
 inline void swap(T &a, T &b) {
     T t = a;
@@ -75,8 +78,8 @@ struct functor {
     }
     /* swap */
     void swap(functor &other) {
-        gl::swap(u, other.u);
-        gl::swap(m_cleaner, other.m_cleaner);
+        gl::detail::swap(u, other.u);
+        gl::detail::swap(m_cleaner, other.m_cleaner);
     }
     /* clear */
     void clear() {
@@ -118,6 +121,9 @@ struct functor {
         assign(mem_fn(f), function_obj_tag()); /* redirect */
     }
 };
+
+
+} /*detail */
 
 
 } /* gl */

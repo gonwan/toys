@@ -134,7 +134,7 @@ public:
 
     typedef R result_type;
     typedef GL_FUNC_NAME self_type;
-    typedef result_type (*invoker_type)(const functor & GL_FUNC_COMMA GL_FUNC_TEMPLATE_ARGS);
+    typedef result_type (*invoker_type)(const detail::functor & GL_FUNC_COMMA GL_FUNC_TEMPLATE_ARGS);
 
     /* do not use (const _F &f) to enable decay */
     template <typename F>
@@ -172,13 +172,13 @@ private:
 
     template <typename F>
     void assign(F &f) {
-        typedef typename get_function_tag<F>::type tag;
+        typedef typename detail::get_function_tag<F>::type tag;
         typedef typename detail::GL_FUNC_GET_FUNCTION_INVOKER<tag, F, R GL_FUNC_COMMA GL_FUNC_TEMPLATE_ARGS>::invoker invoker;
         m_func.assign(f, tag());
         m_invoker = &invoker::invoke; /* compile error here if type mismatch */
     }
 
-    functor m_func;
+    detail::functor m_func;
     invoker_type m_invoker;
 
 };

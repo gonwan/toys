@@ -3,6 +3,7 @@
 
 
 #include "bind_list.hpp"
+#include "mem_fn.hpp"
 
 
 namespace gl {
@@ -220,4 +221,8 @@ template <typename R, typename T,
 }
 
 
-} /* gl *
+} /* gl */
+
+
+#endif
+

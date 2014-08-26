@@ -116,7 +116,7 @@ public:
 
     typedef R result_type;
     typedef function0 self_type;
-    typedef result_type (*invoker_type)(const functor &);
+    typedef result_type (*invoker_type)(const detail::functor &);
 
     /* do not use (const _F &f) to enable decay */
     template <typename F>
@@ -154,13 +154,13 @@ private:
 
     template <typename F>
     void assign(F &f) {
-        typedef typename get_function_tag<F>::type tag;
+        typedef typename detail::get_function_tag<F>::type tag;
         typedef typename detail::get_function_invoker0<tag, F, R>::invoker invoker;
         m_func.assign(f, tag());
         m_invoker = &invoker::invoke; /* compile error here if type mismatch */
     }
 
-    functor m_func;
+    detail::functor m_func;
     invoker_type m_invoker;
 
 };

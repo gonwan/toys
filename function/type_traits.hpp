@@ -1,5 +1,5 @@
-#ifndef _GL_TRAITS_H
-#define _GL_TRAITS_H
+#ifndef _GL_TYPE_TRAITS_H
+#define _GL_TYPE_TRAITS_H
 
 
 namespace gl {
