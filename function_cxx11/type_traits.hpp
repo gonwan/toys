@@ -139,26 +139,8 @@ struct is_reference<T &> : true_type { };
 template <typename T>
 struct is_function_helper : false_type { };
 
-template <typename R>
-struct is_function_helper<R ()> : true_type { };
-template <typename R, typename A1>
-struct is_function_helper<R (A1)> : true_type { };
-template <typename R, typename A1, typename A2>
-struct is_function_helper<R (A1, A2)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3>
-struct is_function_helper<R (A1, A2, A3)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3, typename A4>
-struct is_function_helper<R (A1, A2, A3, A4)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3, typename A4, typename A5>
-struct is_function_helper<R (A1, A2, A3, A4, A5)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-struct is_function_helper<R (A1, A2, A3, A4, A5, A6)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
-struct is_function_helper<R (A1, A2, A3, A4, A5, A6, A7)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
-struct is_function_helper<R (A1, A2, A3, A4, A5, A6, A7, A8)> : true_type { };
-template <typename R, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
-struct is_function_helper<R (A1, A2, A3, A4, A5, A6, A7, A8, A9)> : true_type { };
+template <typename R, typename... A>
+struct is_function_helper<R (A...)> : true_type { };
 
 template <typename T>
 struct is_function : is_function_helper<typename remove_cv<T>::type> { };
