@@ -72,8 +72,7 @@ struct _bind_traits2 {
 /* generic function objects, need to manually specify return type. */
 template <typename R, typename F, typename... TArgs>
 typename detail::_bind_traits1<R, F, TArgs...>::bind_type
-bind(F f, TArgs&&... args)
-{
+bind(F f, TArgs&&... args) {
     typedef typename detail::list_helper<TArgs...>::type list_type;
     return detail::bind_t<R, F, list_type>(f, list_type(std::forward<TArgs>(args)...));
 }

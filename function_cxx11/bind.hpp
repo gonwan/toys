@@ -38,12 +38,12 @@ public:
 
     template <typename... TArgs>
     result_type operator()(TArgs&&... args) {
-        list<void(TArgs...)> a(std::forward<TArgs>(args)...);
+        list<TArgs...> a(std::forward<TArgs>(args)...);
         return l_(type<result_type>(), f_, a);
     }
     template <typename... TArgs>
     result_type operator()(TArgs&&... args) const {
-        list<void(TArgs...)> a(std::forward<TArgs>(args)...);
+        list<TArgs...> a(std::forward<TArgs>(args)...);
         return l_(type<result_type>(), f_, a);
     }
 

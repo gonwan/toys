@@ -57,9 +57,9 @@ struct TT {
 void bar(int, double) { }
 
 void test_internal() {
-#if 0
-    gl::detail::list1<double> args(1.23);
-    gl::detail::list2<gl::detail::value<int>, gl::arg<1> > func(gl::detail::value<int>(1), _1);
+#if 1
+    gl::detail::list<double> args(1.23);
+    gl::detail::list<gl::detail::value<int>, gl::arg<1> > func(gl::detail::value<int>(1), _1);
     func(gl::detail::type<void>(), bar, args);
 #endif
 }

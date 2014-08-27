@@ -12,13 +12,8 @@ private:
 public:
     typedef R result_type;
     explicit GL_MEMFN_NAME(F f): f_(f) { } /* compile error here if type mismatch */
-    template <typename U>
-    R operator()(U *u GL_MEMFN_COMMA GL_MEMFN_PARAMS) const {
-        return (u->*f_)(GL_MEMFN_ARGS);
-    }
-    template <typename U>
-    R operator()(U &u GL_MEMFN_COMMA GL_MEMFN_PARAMS) const {
-        return (u.*f_)(GL_MEMFN_ARGS);
+    R operator()(GL_CONST_MARK T *t GL_MEMFN_COMMA GL_MEMFN_PARAMS) const {
+        return (t->*f_)(GL_MEMFN_ARGS);
     }
 };
 
