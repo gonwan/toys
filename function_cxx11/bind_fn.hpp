@@ -8,6 +8,19 @@
 namespace gl {
 
 
+/*
+template <typename R, typename... TBs, typename... TArgs>
+    detail::bind_t<R, R(*)(TBs...), typename detail::list_helper<void(TArgs...)>::type>
+    bind(R(*f)(TBs...), TArgs&&... args)
+{
+    typedef R (*F)(TBs...);
+    typedef typename detail::list_helper<void(TArgs...)>::type list_type;
+    return detail::bind_t<R, F, list_type>(F(f), list_type(std::forward<TArgs>(args)...));
+}
+*/
+
+#if 1
+
 template <typename R>
     detail::bind_t<R, R(*)(), detail::list0>
     bind(R(*f)())
@@ -112,6 +125,7 @@ template <typename R,
     return detail::bind_t<R, F, list_type>(f, list_type(a1, a2, a3, a4, a5, a6, a7, a8, a9));
 }
 
+#endif
 
 } /* gl */
 

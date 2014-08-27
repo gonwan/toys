@@ -4,6 +4,7 @@
 
 #include "bind_list.hpp"
 #include "mem_fn.hpp"
+#include <utility>
 
 
 namespace gl {
@@ -14,6 +15,29 @@ namespace gl {
  * Since gl::bind() is supposed to be used with gl::function, and gl::function has this ability.
  */
 
+template <typename R, typename T,
+    typename... TBs,
+    typename... TArgs>
+    detail::bind_t<R, detail::mf<R, T, TBs...>, typename detail::list_helper<TArgs...>::type>
+    bind(R(T::*f)(TBs...), TArgs&&... args)
+{
+    typedef detail::mf<R, T, TBs...> F;
+    typedef typename detail::list_helper<TArgs...>::type list_type;
+    return detail::bind_t<R, F, list_type>(F(f), list_type(std::forward<TArgs>(args)...));
+}
+
+template <typename R, typename T,
+    typename... TBs,
+    typename... TArgs>
+    detail::bind_t<R, detail::cmf<R, T, TBs...>, typename detail::list_helper<TArgs...>::type>
+    bind(R(T::*f)(TBs...)const, TArgs&&... args)
+{
+    typedef detail::cmf<R, T, TBs...> F;
+    typedef typename detail::list_helper<TArgs...>::type list_type;
+    return detail::bind_t<R, F, list_type>(F(f), list_type(std::forward<TArgs>(args)...));
+}
+
+#if 0
 
 /* 0 */
 template <typename R, typename T,
@@ -220,6 +244,7 @@ template <typename R, typename T,
     return detail::bind_t<R, F, list_type>(F(f), list_type(a1, a2, a3, a4, a5, a6, a7, a8, a9));
 }
 
+#endif
 
 } /* gl */
 

@@ -80,7 +80,8 @@ struct add_value<value<T> > {
     typedef value<T> type;
 };
 
-template <int I> struct add_value<arg<I> > {
+template <int I>
+struct add_value<arg<I> > {
     typedef arg<I> type;
 };
 

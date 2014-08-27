@@ -5,6 +5,30 @@
 #include "type_traits.hpp"
 #include "reference_wrapper.hpp"
 #include "bind_placeholder.hpp"
+#include <utility>
+
+
+#ifndef _GL_DEBUG
+#define _GL_PRINT_TYPEID(t)
+#else /* _GL_DEBUG */
+#include <typeinfo>
+#include <iostream>
+#ifdef _MSC_VER
+void _gl_print_typeid(const char *t, const char *name) {
+    std::cout << name << std::endl;
+}
+#endif /* _MSC_VER */
+#ifdef __GNUC__
+#include <cxxabi.h>
+void _gl_print_typeid(const char *t, const char *name) {
+    int s;
+    char *p = abi::__cxa_demangle(name, 0, NULL, &s);
+    std::cout << "type of " << t << ": " << p << std::endl;
+    free(p);
+}
+#endif /* __GNUC__ */
+#define _GL_PRINT_TYPEID(t)     _gl_print_typeid(#t, typeid(t).name())
+#endif /* _GL_DEBUG */
 
 
 namespace gl {
@@ -21,7 +45,7 @@ class bind_t;
 template <typename R>
 struct type { };
 
-/* result trait */
+/* result_trait */
 struct unspecified { };
 
 template <typename R, typename F>
@@ -37,6 +61,17 @@ struct result_traits<unspecified, F> {
 template <typename F>
 struct result_traits<unspecified, reference_wrapper<F> > {
     typedef typename F::result_type type;
+};
+
+/* add lvalue reference */
+template <typename T>
+struct add_lvalue_reference {
+    typedef T type;
+};
+
+template <typename T>
+struct add_lvalue_reference<T &> {
+    typedef T &type;
 };
 
 /* value type */
@@ -80,7 +115,14 @@ struct add_value<value<T> > {
     typedef value<T> type;
 };
 
-template <int I> struct add_value<arg<I> > {
+template <int I>
+struct add_value<arg<I> > {
+    typedef arg<I> type;
+};
+
+/* XXX */
+template <int I>
+struct add_value<arg<I> &> {
     typedef arg<I> type;
 };
 
@@ -165,7 +207,7 @@ public:
 
     using base_type::operator[];
 
-    A1 operator[](arg<1>) const {
+    typename add_lvalue_reference<A1>::type operator[](arg<1>) const {
         return a1_;
     }
 
@@ -220,7 +262,7 @@ public:
 
     using base_type::operator[];
 
-    A2 operator[](arg<2>) const {
+    typename add_lvalue_reference<A2>::type operator[](arg<2>) const {
         return a2_;
     }
 
@@ -248,6 +290,9 @@ public:
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
+        _GL_PRINT_TYPEID(a);
+        _GL_PRINT_TYPEID(a1_);
+        _GL_PRINT_TYPEID(a2_);
         unwrapper<F>::unwrap(f)(a[a1_], a[a2_]);
     }
 
@@ -276,7 +321,7 @@ public:
 
     using base_type::operator[];
 
-    A3 operator[](arg<3>) const {
+    typename add_lvalue_reference<A3>::type operator[](arg<3>) const {
         return a3_;
     }
 
@@ -304,6 +349,13 @@ public:
 
     template <typename F, typename A>
     void operator()(type<void>, F &f, A &a) {
+        _GL_PRINT_TYPEID(a);
+        _GL_PRINT_TYPEID(a1_);
+        _GL_PRINT_TYPEID(a2_);
+        _GL_PRINT_TYPEID(a3_);
+        /*
+         * how to forward?????
+         */
         unwrapper<F>::unwrap(f)(a[a1_], a[a2_], a[a3_]);
     }
 
@@ -333,7 +385,7 @@ public:
 
     using base_type::operator[];
 
-    A4 operator[](arg<4>) const {
+    typename add_lvalue_reference<A4>::type operator[](arg<4>) const {
         return a4_;
     }
 
@@ -391,7 +443,7 @@ public:
 
     using base_type::operator[];
 
-    A5 operator[](arg<5>) const {
+    typename add_lvalue_reference<A5>::type operator[](arg<5>) const {
         return a5_;
     }
 
@@ -450,7 +502,7 @@ public:
 
     using base_type::operator[];
 
-    A6 operator[](arg<6>) const {
+    typename add_lvalue_reference<A6>::type operator[](arg<6>) const {
         return a6_;
     }
 
@@ -510,7 +562,7 @@ public:
 
     using base_type::operator[];
 
-    A7 operator[](arg<7>) const {
+    typename add_lvalue_reference<A7>::type operator[](arg<7>) const {
         return a7_;
     }
 
@@ -571,7 +623,7 @@ public:
 
     using base_type::operator[];
 
-    A8 operator[](arg<8>) const {
+    typename add_lvalue_reference<A8>::type operator[](arg<8>) const {
         return a8_;
     }
 
@@ -633,7 +685,7 @@ public:
 
     using base_type::operator[];
 
-    A8 operator[](arg<9>) const {
+    typename add_lvalue_reference<A9>::type operator[](arg<9>) const {
         return a9_;
     }
 
@@ -670,6 +722,120 @@ public:
     }
 
 };
+
+
+/* === temporary definition === */
+
+template <typename Sig>
+class list;
+
+template <>
+class list<void()> : public list0 {
+    typedef list0 base_type;
+public:
+    list() : base_type() {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1>
+class list<void(A1)> : public list1<A1> {
+    typedef list1<A1> base_type;
+public:
+    list(A1 a1) : base_type(a1) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2>
+class list<void(A1,A2)>: public list2<A1, A2> {
+    typedef list2<A1, A2> base_type;
+public:
+    list(A1 a1, A2 a2) : base_type(a1, a2) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3>
+class list<void(A1,A2,A3)>: public list3<A1, A2, A3> {
+    typedef list3<A1, A2, A3> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3) : base_type(a1, a2, a3) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3, typename A4>
+class list<void(A1,A2,A3,A4)>: public list4<A1, A2, A3, A4> {
+    typedef list4<A1, A2, A3, A4> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3, A4 a4) : base_type(a1, a2, a3, a4) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5>
+class list<void(A1,A2,A3,A4,A5)>: public list5<A1, A2, A3, A4, A5> {
+    typedef list5<A1, A2, A3, A4, A5> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5) : base_type(a1, a2, a3, a4, a5) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
+class list<void(A1,A2,A3,A4,A5,A6)>: public list6<A1, A2, A3, A4, A5, A6> {
+    typedef list6<A1, A2, A3, A4, A5, A6> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) : base_type(a1, a2, a3, a4, a5, a6) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7>
+class list<void(A1,A2,A3,A4,A5,A6,A7)>: public list7<A1, A2, A3, A4, A5, A6, A7> {
+    typedef list7<A1, A2, A3, A4, A5, A6, A7> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7) : base_type(a1, a2, a3, a4, a5, a6, a7) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+class list<void(A1,A2,A3,A4,A5,A6,A7,A8)>: public list8<A1, A2, A3, A4, A5, A6, A7, A8> {
+    typedef list8<A1, A2, A3, A4, A5, A6, A7, A8> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8) : base_type(a1, a2, a3, a4, a5, a6, a7, a8) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+template <typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
+class list<void(A1,A2,A3,A4,A5,A6,A7,A8,A9)>: public list9<A1, A2, A3, A4, A5, A6, A7, A8, A9> {
+    typedef list9<A1, A2, A3, A4, A5, A6, A7, A8, A9> base_type;
+public:
+    list(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, A9 a9) : base_type(a1, a2, a3, a4, a5, a6, a7, a8, a9) {
+    }
+    using base_type::operator[];
+    using base_type::operator();
+};
+
+/* list_helper */
+template <typename... TArgs>
+struct list_helper {
+    typedef list<void(typename add_value<TArgs>::type...)> type;
+};
+
+/* === temporary definition === */
 
 
 /* list helpers */
