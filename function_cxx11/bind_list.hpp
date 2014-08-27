@@ -2,9 +2,10 @@
 #define _GL_BIND_LIST_HPP
 
 
-#include "type_traits.hpp"
-#include "reference_wrapper.hpp"
 #include "bind_placeholder.hpp"
+#include "mem_fn.hpp"
+#include "reference_wrapper.hpp"
+#include "type_traits.hpp"
 #include <utility>
 
 
@@ -103,6 +104,23 @@ struct unwrapper<reference_wrapper<F> > {
     }
 };
 
+template <typename R, typename T, typename... TArgs>
+struct unwrapper<R(T::*)(TArgs...)> {
+    typedef R (T::*F)(TArgs...);
+    inline static detail::mf<R, T, TArgs...> &unwrap(F &f) {
+        static detail::mf<R, T, TArgs...> _f(f);
+        return _f;
+    }
+};
+
+template <typename R, typename T, typename... TArgs>
+struct unwrapper<R(T::*)(TArgs...)const> {
+    typedef R (T::*F)(TArgs...) const;
+    inline static detail::cmf<R, T, TArgs...> &unwrap(F &f) {
+        static detail::cmf<R, T, TArgs...> _f(f);
+        return _f;
+    }
+};
 
 /* add_value trait */
 template <typename T>
@@ -293,6 +311,9 @@ public:
         _GL_PRINT_TYPEID(a);
         _GL_PRINT_TYPEID(a1_);
         _GL_PRINT_TYPEID(a2_);
+        /*
+         * XXX: how to forward???
+         */
         unwrapper<F>::unwrap(f)(a[a1_], a[a2_]);
     }
 
@@ -353,9 +374,6 @@ public:
         _GL_PRINT_TYPEID(a1_);
         _GL_PRINT_TYPEID(a2_);
         _GL_PRINT_TYPEID(a3_);
-        /*
-         * how to forward?????
-         */
         unwrapper<F>::unwrap(f)(a[a1_], a[a2_], a[a3_]);
     }
 

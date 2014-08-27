@@ -2,9 +2,9 @@
 #define _GL_BIND_LIST_HPP
 
 
-#include "type_traits.hpp"
-#include "reference_wrapper.hpp"
 #include "bind_placeholder.hpp"
+#include "reference_wrapper.hpp"
+#include "type_traits.hpp"
 
 
 namespace gl {
@@ -21,7 +21,7 @@ class bind_t;
 template <typename R>
 struct type { };
 
-/* result trait */
+/* result_trait */
 struct unspecified { };
 
 template <typename R, typename F>

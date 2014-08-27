@@ -67,13 +67,15 @@ void test_internal() {
 void test_ref_parameters() {
 #if 1
     C c;
-    auto f1 = gl::bind(foo, _1, _2);
-    auto f2 = gl::bind(foo, _1, _2, _3);
-    //auto f1 = gl::bind((void(*)(int,C&))foo, _1, _2);
-    //auto f2 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, _3);
-    //f2 = gl::bind(foo2, _1, _2, _3);
-    //gl::function<void(int,C&)> f1 = gl::bind(foo, _1, _2);
-    //gl::function<void(int,int,const C&)> f2 = gl::bind(foo, _1, _2, _3);
+#if 0
+    auto f1 = gl::bind((void(*)(int,C&))foo, _1, _2);
+    auto f2 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, _3);
+    f2 = gl::bind(foo2, _1, _2, _3);
+#else
+    gl::function<void(int,C&)> f1 = gl::bind((void(*)(int,C&))foo, _1, _2);
+    gl::function<void(int,int,const C&)> f2 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, _3);
+    f2 = gl::bind(foo2, _1, _2, _3);
+#endif
     c.i = 0;
     f1(1, c);
     cout << c.i << endl;
@@ -110,7 +112,6 @@ void test_member_function() {
     f10(&t1);
     gl::function<void()> f11 = gl::bind(&TT::foo, &t1);
     f11();
-#if 0
     gl::function<void(const TT*,int)> f20 = gl::bind(&TT::foo2, _1, _2);
     f20(&t2, 1);
     gl::function<void(const TT*)> f21 = gl::bind(&TT::foo2, _1, 1);
@@ -119,7 +120,6 @@ void test_member_function() {
     f22(1);
     gl::function<void()> f23 = gl::bind(&TT::foo2, &t2, 1);
     f23();
-#endif
 #endif
 }
 

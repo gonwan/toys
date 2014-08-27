@@ -61,8 +61,6 @@ private:
 } /* gl */
 
 
-#include "bind_fn.hpp"
-#include "bind_mem_fn.hpp"
 #include "bind_fn_obj.hpp"
 
 
