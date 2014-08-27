@@ -1,5 +1,5 @@
-#ifndef _GL_BIND_LIST2_HPP
-#define _GL_BIND_LIST2_HPP
+#ifndef _GL_BIND_LIST_HPP
+#define _GL_BIND_LIST_HPP
 
 
 #include "bind_placeholder.hpp"

@@ -35,8 +35,8 @@ public:
     explicit cmf(F f): f_(f) { } /* compile error here if type mismatch */
     /* forward arguments */
 #if 0
-    R operator()(const T *u, TArgs&&... args) const {
-        return (u->*f_)(std::forward<TArgs>(args)...);
+    R operator()(const T *t, TArgs&&... args) const {
+        return (t->*f_)(std::forward<TArgs>(args)...);
     }
 #else
     /* XXX: temporary usage... */
