@@ -43,10 +43,10 @@ struct result_traits<unspecified, reference_wrapper<F> > {
 template <typename T>
 class value {
 public:
-    value(T const & t): t_(t) { }
+    value(const T &t): t_(t) { }
     T &get() { return t_; }
     const T &get() const { return t_; }
-    bool operator==(value const & rhs) const {
+    bool operator==(const value &rhs) const {
         return t_ == rhs.t_;
     }
 private:

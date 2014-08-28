@@ -69,10 +69,10 @@ struct result_traits<unspecified, reference_wrapper<F> > {
 template <typename T>
 class value {
 public:
-    value(T const &t): t_(t) { }
+    value(const T &t): t_(t) { }
     T &get() { return t_; }
     const T &get() const { return t_; }
-    bool operator==(value const &rhs) const {
+    bool operator==(const value &rhs) const {
         return t_ == rhs.t_;
     }
 private:
@@ -191,26 +191,6 @@ public:
     typename detail::result_traits<R, F>::type operator[](const bind_t<R, F, L> &b) const {
         return b.eval(*this);
     }
-
-    /* no partial specialization for functions, so simply use overload */
-/*
-    template <typename R, typename F, typename A>
-    R operator()(type<R>, F &f, A &a) {
-        return unwrapper<F>::unwrap(f)(); // XXX: how to??
-    }
-    template <typename R, typename F, typename A>
-    R operator()(type<R>, const F &f, A &a) const {
-        return unwrapper<const F>::unwrap(f)();
-    }
-    template <typename F, typename A>
-    void operator()(type<void>, F &f, A &) {
-        unwrapper<F>::unwrap(f)();
-    }
-    template <typename F, typename A>
-    void operator()(type<void>, const F &f, A &) const {
-        unwrapper<const F>::unwrap(f)();
-    }
-*/
 
     template<int ...>
     struct seq { };
