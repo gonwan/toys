@@ -65,25 +65,14 @@ struct result_traits<unspecified, reference_wrapper<F> > {
     typedef typename F::result_type type;
 };
 
-/* add lvalue reference */
-template <typename T>
-struct add_lvalue_reference {
-    typedef T type;
-};
-
-template <typename T>
-struct add_lvalue_reference<T &> {
-    typedef T &type;
-};
-
 /* value type */
 template <typename T>
 class value {
 public:
-    value(T const & t): t_(t) { }
+    value(T const &t): t_(t) { }
     T &get() { return t_; }
     const T &get() const { return t_; }
-    bool operator==(value const & rhs) const {
+    bool operator==(value const &rhs) const {
         return t_ == rhs.t_;
     }
 private:
@@ -142,7 +131,7 @@ struct add_value<arg<I> > {
 /* XXX */
 template <int I>
 struct add_value<arg<I> &> {
-    typedef arg<I> type;
+    typedef arg<I> &type;
 };
 
 template <typename T>
@@ -163,7 +152,7 @@ class list {
 
 public:
 
-    explicit list(TArgs... args): m_tp(std::forward<TArgs>(args)...) { }
+    explicit list(TArgs&&... args): m_tp(std::forward<TArgs>(args)...) { }
 
 #if 0 /* incorrect??? */
     template <int I>
@@ -235,77 +224,81 @@ public:
     };
 
 #if 0
+
     template <typename R, typename F, typename A, int ...S>
-    R aaaa(F &f, A &a, seq<S...>) {
+    R _op(F &f, A &a, seq<S...>) {
         return unwrapper<F>::unwrap(f)(a[std::get<S>(m_tp)]...);
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return aaaa<R>(f, a, typename gens<sizeof...(TArgs)>::type());
+        return _op<R>(f, a, typename gens<sizeof...(TArgs)>::type());
     }
 
     template <typename R, typename F, typename A, int ...S>
-    R bbbb(const F &f, A &a, seq<S...>) {
+    R _op(const F &f, A &a, seq<S...>) {
         return unwrapper<const F>::unwrap(f)(a[std::get<S>(m_tp)]...);
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) {
-        return bbbb<R>(f, a, typename gens<sizeof...(TArgs)>::type());
+        return _op<R>(f, a, typename gens<sizeof...(TArgs)>::type());
     }
 
     template <typename F, typename A, int ...S>
-    void cccc(F &f, A &a, seq<S...>) {
+    void _op(F &f, A &a, seq<S...>) {
         unwrapper<F>::unwrap(f)(a[std::get<S>(m_tp)]...);
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        cccc(f, a, typename gens<sizeof...(TArgs)>::type());
+        _op(f, a, typename gens<sizeof...(TArgs)>::type());
     }
 
     template <typename F, typename A, int ...S>
-    void dddd(const F &f, A &a, seq<S...>) {
+    void _op(const F &f, A &a, seq<S...>) {
         unwrapper<const F>::unwrap(f)(a[std::get<S>(m_tp)]...);
     }
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        dddd(f, a, typename gens<sizeof...(TArgs)>::type());
+        _op(f, a, typename gens<sizeof...(TArgs)>::type());
     }
+
 #else
+
     template <typename R, typename F, typename A, int ...S>
-    R aaa(F &f, A &a, seq<S...>) {
+    R _op(F &f, A &a, seq<S...>) {
         return unwrapper<F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {
-        return aaa<R>(f, a, typename gens<sizeof...(TArgs)>::type());
+        return _op<R>(f, a, typename gens<sizeof...(TArgs)>::type());
     }
 
     template <typename R, typename F, typename A, int ...S>
-    R bbb(const F &f, A &a, seq<S...>) {
+    R _op(const F &f, A &a, seq<S...>) {
         return unwrapper<const F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) {
-        return bbb<R>(f, a, typename gens<sizeof...(TArgs)>::type());
+        return _op<R>(f, a, typename gens<sizeof...(TArgs)>::type());
     }
 
     template <typename F, typename A, int ...S>
-    void ccc(F &f, A &a, seq<S...>) {
+    void _op(F &f, A &a, seq<S...>) {
         unwrapper<F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
     }
     template <typename R, typename F, typename A>
     R operator()(type<R>, const F &f, A &a) const {
-        ccc(f, a, typename gens<sizeof...(TArgs)>::type());
+        _op(f, a, typename gens<sizeof...(TArgs)>::type());
     }
 
     template <typename F, typename A, int ...S>
-    void ddd(const F &f, A &a, seq<S...>) {
+    void _op(const F &f, A &a, seq<S...>) {
         unwrapper<const F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
     }
     template <typename F, typename A>
     void operator()(type<void>, const F &f, A &a) const {
-        ddd(f, a, typename gens<sizeof...(TArgs)>::type());
+        _op(f, a, typename gens<sizeof...(TArgs)>::type());
     }
+
 #endif
 };
 

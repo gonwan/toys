@@ -19,28 +19,28 @@ namespace detail {
     struct void_function_invoker {
         static void invoke(const functor &function_ptr, TArgs... args) {
             F f = reinterpret_cast<F>(function_ptr.u.func_ptr);
-            f(std::forward<TArgs>(args)...);
+            f(args...);
         }
     };
     template <typename F, typename R, typename... TArgs>
     struct function_invoker {
         static R invoke(const functor &function_ptr, TArgs... args) {
             F f = reinterpret_cast<F>(function_ptr.u.func_ptr);
-            return f(std::forward<TArgs>(args)...);
+            return f(args...);
         }
     };
     template <typename F, typename... TArgs>
     struct void_function_obj_invoker {
         static void invoke(const functor &function_obj_ptr, TArgs... args) {
             F *f = reinterpret_cast<F *>(function_obj_ptr.u.obj_ptr);
-            (*f)(std::forward<TArgs>(args)...);
+            (*f)(args...);
         }
     };
     template <typename F, typename R, typename... TArgs>
     struct function_obj_invoker {
         static R invoke(const functor &function_obj_ptr, TArgs... args) {
             F *f = reinterpret_cast<F *>(function_obj_ptr.u.obj_ptr);
-            return (*f)(std::forward<TArgs>(args)...);
+            return (*f)(args...);
         }
     };
     template <typename F, typename... TArgs>
@@ -48,7 +48,7 @@ namespace detail {
         static void invoke(const functor &function_obj_ref_ptr, TArgs... args) {
             typedef typename F::type _F;
             _F *f = reinterpret_cast<_F *>(function_obj_ref_ptr.u.obj_ptr);
-            (*f)(std::forward<TArgs>(args)...);
+            (*f)(args...);
         }
     };
     template <typename F, typename R, typename... TArgs>
@@ -56,21 +56,21 @@ namespace detail {
         static R invoke(const functor &function_obj_ref_ptr, TArgs... args) {
             typedef typename F::type _F;
             _F *f = reinterpret_cast<_F *>(function_obj_ref_ptr.u.obj_ptr);
-            return (*f)(std::forward<TArgs>(args)...);
+            return (*f)(args...);
         }
     };
     template <typename F, typename... TArgs>
     struct void_member_function_invoker {
         static void invoke(const functor &member_ptr, TArgs... args) {
             F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
-            mem_fn(*f)(std::forward<TArgs>(args)...);
+            mem_fn(*f)(args...);
         }
     };
     template <typename F, typename R, typename... TArgs>
     struct member_function_invoker {
         static R invoke(const functor &member_ptr, TArgs... args) {
             F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
-            return mem_fn(*f)(std::forward<TArgs>(args)...);
+            return mem_fn(*f)(args...);
         }
     };
 
@@ -139,11 +139,11 @@ public:
         return m_invoker == 0;
     }
 
-    result_type operator()(TArgs... args) const {
+    result_type operator()(TArgs&&... args) const {
         if (empty()) {
            throw std::runtime_error("bad function call");
         }
-        return m_invoker(m_func, args...);
+        return m_invoker(m_func, std::forward<TArgs>(args)...);
     }
 
 private:

@@ -20,9 +20,16 @@ public:
     typedef R result_type;
     explicit mf(F f): f_(f) { } /* compile error here if type mismatch */
     /* forward arguments */
+#if 0
     R operator()(T *t, TArgs&&... args) const {
         return (t->*f_)(std::forward<TArgs>(args)...);
     }
+#else
+    /* XXX: temporary usage... */
+    R operator()(T *t, TArgs... args) const {
+        return (t->*f_)(std::forward<TArgs>(args)...);
+    }
+#endif
 };
 
 template <typename R, typename T, typename... TArgs>
