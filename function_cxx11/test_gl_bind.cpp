@@ -18,6 +18,9 @@ void foo(int, int, const C &) {
 void foo2(int, int, const C &) {
 }
 
+void foo3(int, C &&) {
+}
+
 struct c0 {
     void operator()() {
         cout << "c0()" << endl;
@@ -80,6 +83,12 @@ void test_ref_parameters() {
     f1(1, c);
     cout << c.i << endl;
     f2(1, 2, c);
+#endif
+#if 1 /* FIXME: */
+    auto g3 = gl::bind(foo3, _1, _2);
+    g3(1, static_cast<C&&>(c));
+    //gl::function<void(int,C&&)> f3 = g3;
+    //f3(1, static_cast<C&&>(c));
 #endif
 }
 
