@@ -15,49 +15,35 @@ namespace detail {
 
     /* invokers */
     template <typename F, typename A1, typename A2>
-    struct function_void_function_invoker2 {
+    struct void_function_invoker2 {
         static void invoke(const functor &function_ptr, A1 a1, A2 a2) {
             F f = reinterpret_cast<F>(function_ptr.u.func_ptr);
             f(a1, a2);
         }
     };
     template <typename F, typename R, typename A1, typename A2>
-    struct function_function_invoker2 {
+    struct function_invoker2 {
         static R invoke(const functor &function_ptr, A1 a1, A2 a2) {
             F f = reinterpret_cast<F>(function_ptr.u.func_ptr);
             return f(a1, a2);
         }
     };
     template <typename F, typename A1, typename A2>
-    struct function_void_function_obj_invoker2 {
+    struct void_function_obj_invoker2 {
         static void invoke(const functor &function_obj_ptr, A1 a1, A2 a2) {
             F *f = reinterpret_cast<F *>(function_obj_ptr.u.obj_ptr);
             (*f)(a1, a2);
         }
     };
     template <typename F, typename R, typename A1, typename A2>
-    struct function_function_obj_invoker2 {
+    struct function_obj_invoker2 {
         static R invoke(const functor &function_obj_ptr, A1 a1, A2 a2) {
             F *f = reinterpret_cast<F *>(function_obj_ptr.u.obj_ptr);
             return (*f)(a1, a2);
         }
     };
     template <typename F, typename A1, typename A2>
-    struct function_void_member_function_invoker2 {
-        static void invoke(const functor &member_ptr, A1 a1, A2 a2) {
-            F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
-            mem_fn(*f)(a1, a2);
-        }
-    };
-    template <typename F, typename R, typename A1, typename A2>
-    struct function_member_function_invoker2 {
-        static R invoke(const functor &member_ptr, A1 a1, A2 a2) {
-            F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
-            return mem_fn(*f)(a1, a2);
-        }
-    };
-    template <typename F, typename A1, typename A2>
-    struct function_void_function_obj_ref_invoker2 {
+    struct void_function_ref_invoker2 {
         static void invoke(const functor &function_obj_ref_ptr, A1 a1, A2 a2) {
             typedef typename F::type _F;
             _F *f = reinterpret_cast<_F *>(function_obj_ref_ptr.u.obj_ptr);
@@ -65,11 +51,25 @@ namespace detail {
         }
     };
     template <typename F, typename R, typename A1, typename A2>
-    struct function_function_obj_ref_invoker2 {
+    struct function_ref_invoker2 {
         static R invoke(const functor &function_obj_ref_ptr, A1 a1, A2 a2) {
             typedef typename F::type _F;
             _F *f = reinterpret_cast<_F *>(function_obj_ref_ptr.u.obj_ptr);
             return (*f)(a1, a2);
+        }
+    };
+    template <typename F, typename A1, typename A2>
+    struct void_member_function_invoker2 {
+        static void invoke(const functor &member_ptr, A1 a1, A2 a2) {
+            F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
+            mem_fn(*f)(a1, a2);
+        }
+    };
+    template <typename F, typename R, typename A1, typename A2>
+    struct member_function_invoker2 {
+        static R invoke(const functor &member_ptr, A1 a1, A2 a2) {
+            F *f = reinterpret_cast<F *>(member_ptr.u.obj_ptr);
+            return mem_fn(*f)(a1, a2);
         }
     };
 
@@ -80,26 +80,26 @@ namespace detail {
     template <typename F, typename R, typename A1, typename A2>
     struct get_function_invoker2<function_ptr_tag, F, R, A1, A2> {
         typedef typename if_c<is_void<R>::value,
-                function_void_function_invoker2<F, A1, A2>,
-                function_function_invoker2<F, R, A1, A2> >::type invoker;
+                void_function_invoker2<F, A1, A2>,
+                function_invoker2<F, R, A1, A2> >::type invoker;
     };
     template <typename F, typename R, typename A1, typename A2>
     struct get_function_invoker2<function_obj_tag, F, R, A1, A2> {
         typedef typename if_c<is_void<R>::value,
-                function_void_function_obj_invoker2<F, A1, A2>,
-                function_function_obj_invoker2<F, R, A1, A2> >::type invoker;
-    };
-    template <typename F, typename R, typename A1, typename A2>
-    struct get_function_invoker2<member_function_ptr_tag, F, R, A1, A2> {
-        typedef typename if_c<is_void<R>::value,
-                function_void_member_function_invoker2<F, A1, A2>,
-                function_member_function_invoker2<F, R, A1, A2> >::type invoker;
+                void_function_obj_invoker2<F, A1, A2>,
+                function_obj_invoker2<F, R, A1, A2> >::type invoker;
     };
     template <typename F, typename R, typename A1, typename A2>
     struct get_function_invoker2<function_obj_ref_tag, F, R, A1, A2> {
         typedef typename if_c<is_void<R>::value,
-                function_void_function_obj_ref_invoker2<F, A1, A2>,
-                function_function_obj_ref_invoker2<F, R, A1, A2> >::type invoker;
+                void_function_ref_invoker2<F, A1, A2>,
+                function_ref_invoker2<F, R, A1, A2> >::type invoker;
+    };
+    template <typename F, typename R, typename A1, typename A2>
+    struct get_function_invoker2<member_function_ptr_tag, F, R, A1, A2> {
+        typedef typename if_c<is_void<R>::value,
+                void_member_function_invoker2<F, A1, A2>,
+                member_function_invoker2<F, R, A1, A2> >::type invoker;
     };
 
 } /* detail */
@@ -135,7 +135,7 @@ public:
     }
 
     result_type operator()(A1 a1, A2 a2) const {
-        if (this->empty()) {
+        if (empty()) {
            throw std::runtime_error("bad function call");
         }
         return m_invoker(m_func, a1, a2);
@@ -163,21 +163,20 @@ private:
 
 
 template <typename R, typename A1, typename A2>
-struct function<R (A1, A2)> : public function2<R, A1, A2> {
+class function<R (A1, A2)> : public function2<R, A1, A2> {
 
 public:
 
     typedef function2<R, A1, A2> base_type;
 
     template <typename F>
-    function(F f) : base_type(f) {
-    }
+    function(F f) : base_type(f) { }
 
     /* we do not need virtual destructors here, since no resource is managed here presently. */
 };
 
 
-} /* namespace */
+} /* gl */
 
 
 #endif
