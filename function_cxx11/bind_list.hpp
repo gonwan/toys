@@ -152,8 +152,8 @@ class list {
     std::tuple<TArgs...> m_tp;
 
 public:
-
-    explicit list(TArgs&&... args): m_tp(std::forward<TArgs>(args)...) { }
+    template <typename... __TArgs>
+    explicit list(__TArgs&&... args): m_tp(std::forward<__TArgs>(args)...) { }
 
     template <int I>
     typename std::tuple_element<I-1, std::tuple<TArgs...> >::type

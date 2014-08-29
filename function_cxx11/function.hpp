@@ -139,12 +139,12 @@ public:
         return m_invoker == 0;
     }
 
-    template <typename... TBs>
-    result_type operator()(TBs&&... args) const {
+    template <typename... __TArgs>
+    result_type operator()(__TArgs&&... args) const {
         if (empty()) {
            throw std::runtime_error("bad function call");
         }
-        return m_invoker(m_func, std::forward<TBs>(args)...);
+        return m_invoker(m_func, std::forward<__TArgs>(args)...);
     }
 
 private:

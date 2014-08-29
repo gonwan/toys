@@ -20,10 +20,10 @@ public:
     typedef R result_type;
     explicit mf(F f): f_(f) { } /* compile error here if type mismatch */
 #if 1
-    /* NOTE: use a separate TBs to forward arguments */
-    template <typename... TBs>
-    R operator()(T *t, TBs&&... args) const {
-        return (t->*f_)(std::forward<TBs>(args)...);
+    /* NOTE: use a separate __TArgs to forward arguments */
+    template <typename... __TArgs>
+    R operator()(T *t, __TArgs&&... args) const {
+        return (t->*f_)(std::forward<__TArgs>(args)...);
     }
 #else
     R operator()(T *t, TArgs... args) const {
@@ -41,10 +41,10 @@ public:
     typedef R result_type;
     explicit cmf(F f): f_(f) { } /* compile error here if type mismatch */
 #if 1
-    /* NOTE: use a separate TBs to forward arguments */
-    template <typename... TBs>
-    R operator()(const T *t, TBs&&... args) const {
-        return (t->*f_)(std::forward<TBs>(args)...);
+    /* NOTE: use a separate __TArgs to forward arguments */
+    template <typename... __TArgs>
+    R operator()(const T *t, __TArgs&&... args) const {
+        return (t->*f_)(std::forward<__TArgs>(args)...);
     }
 #else
     R operator()(const T *t, TArgs... args) const {
