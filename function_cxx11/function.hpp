@@ -14,7 +14,11 @@ namespace gl {
 
 namespace detail {
 
-    /* invokers */
+    /*
+     * XXX:
+     * Invokers here do not forward arguments to underlying functions.
+     * So, rvalue reference parameters are not supported, invoker() always fails in specialization phase.
+     */
     template <typename F, typename... TArgs>
     struct void_function_invoker {
         static void invoke(const functor &function_ptr, TArgs... args) {

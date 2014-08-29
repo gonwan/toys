@@ -138,7 +138,6 @@ struct add_value<arg<I> > {
     typedef arg<I> type;
 };
 
-/* XXX */
 template <int I>
 struct add_value<arg<I> &> {
     typedef arg<I> type;

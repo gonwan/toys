@@ -155,8 +155,18 @@ public:
     template <typename... __TArgs>
     explicit list(__TArgs&&... args): m_tp(std::forward<__TArgs>(args)...) { }
 
+	/*
+     * The non-const version is added here,
+     * since the return value of std::get() depends on the constness of its tuple parameter.
+     * The const version simply is for nested bind().
+     */
     template <int I>
     typename std::tuple_element<I-1, std::tuple<TArgs...> >::type
+    operator[](arg<I>) {
+        return std::get<I-1>(m_tp);
+    }
+    template <int I>
+    const typename std::tuple_element<I-1, std::tuple<TArgs...> >::type
     operator[](arg<I>) const {
         return std::get<I-1>(m_tp);
     }
@@ -196,7 +206,7 @@ public:
 
     template<int ...S>
     struct gens<0, S...> {
-    	typedef seq<S...> type;
+        typedef seq<S...> type;
     };
 
 #if 1
