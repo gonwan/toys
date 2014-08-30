@@ -18,6 +18,7 @@ namespace detail {
      * XXX:
      * Invokers here do not forward arguments to underlying functions.
      * So, rvalue reference parameters are not supported, invoker() always fails in specialization phase.
+     * For instance, when the template argument is T&& here, it will be treated as T& inside function and pass through.
      */
     template <typename F, typename... TArgs>
     struct void_function_invoker {

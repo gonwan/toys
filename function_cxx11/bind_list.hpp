@@ -7,6 +7,7 @@
 #include "reference_wrapper.hpp"
 #include "type_traits.hpp"
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 
@@ -155,16 +156,20 @@ public:
     template <typename... __TArgs>
     explicit list(__TArgs&&... args): m_tp(std::forward<__TArgs>(args)...) { }
 
-	/*
+    /*
      * The non-const version is added here,
      * since the return value of std::get() depends on the constness of its tuple parameter.
      * The const version simply is for nested bind().
      */
     template <int I>
-    typename std::tuple_element<I-1, std::tuple<TArgs...> >::type
+    typename std::add_rvalue_reference<
+        typename std::tuple_element<I-1, std::tuple<TArgs...> >::type
+    >::type
     operator[](arg<I>) {
-        return std::get<I-1>(m_tp);
+        typedef typename std::tuple_element<I-1, std::tuple<TArgs...> >::type Tp;
+        return std::forward<Tp>((std::get<I-1>(m_tp)));
     }
+    /* a rvalue overload may be better? */
     template <int I>
     const typename std::tuple_element<I-1, std::tuple<TArgs...> >::type
     operator[](arg<I>) const {
@@ -172,13 +177,9 @@ public:
     }
 
     template <typename T>
-    T &operator[](value<T> &v) const {
-        return v.get();
-    }
-
-    template <typename T>
-    const T &operator[](const value<T> &v) const {
-        return v.get();
+    typename std::add_rvalue_reference<T>::type
+    operator[](value<T> &v) const {
+        return std::forward<T>(v.get());
     }
 
     /* reply on the constness of T */

@@ -6,6 +6,7 @@ using namespace std;
 
 struct C {
     int i;
+    C() : i(0) { }
 };
 
 void foo(int, C &c) {
@@ -70,25 +71,46 @@ void test_internal() {
 void test_ref_parameters() {
 #if 1
     C c;
+    const C c2;
 #if 0
     auto f1 = gl::bind((void(*)(int,C&))foo, _1, _2);
     auto f2 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, _3);
     f2 = gl::bind(foo2, _1, _2, _3);
 #else
-    gl::function<void(int,C&)> f1 = gl::bind((void(*)(int,C&))foo, _1, _2);
-    gl::function<void(int,int,const C&)> f2 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, _3);
-    f2 = gl::bind(foo2, _1, _2, _3);
-#endif
-    c.i = 0;
-    f1(1, c);
+    /* const lvalue reference */
+    gl::function<void(int,int,const C&)> f20 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, _3);
+    f20(1, 2, c2);
+    gl::function<void(int,int)> f21 = gl::bind((void(*)(int,int,const C&))foo, _1, _2, c2);
+    f21(1, 2);
+    gl::function<void(int,const C&)> f22 = gl::bind((void(*)(int,int,const C&))foo, _1, 1, _2);
+    f22(1, c2);
+    /* lvalue reference */
+    gl::function<void(int,C&)> f10 = gl::bind((void(*)(int,C&))foo, _1, _2);
+    f10(1, c);
     cout << c.i << endl;
-    f2(1, 2, c);
+    gl::function<void(C&)> f11 = gl::bind((void(*)(int,C&))foo, 1, _1);
+    f11(c);
+    gl::function<void(int)> f12 = gl::bind((void(*)(int,C&))foo, _1, c);
+    f12(1);
+    gl::function<void()> f13 = gl::bind((void(*)(int,C&))foo, 1, c);
+    f13();
 #endif
-#if 1 /* FIXME: */
-    auto g3 = gl::bind(foo3, _1, _2);
-    g3(1, static_cast<C&&>(c));
-    //gl::function<void(int,C&&)> f3 = g3;
-    //f3(1, static_cast<C&&>(c));
+    /*
+     * rvalue reference
+     * Assignment to gl::function is not supported, see function.hpp.
+     */
+    //gl::function<void(int,C&&)> f30 = gl::bind(foo3, _1, _2);
+    //gl::function<void(C&&)> f31 = gl::bind(foo3, 1, _1);
+    //gl::function<void(int)> f32 = gl::bind(foo3, _1, std::move(c));
+    //gl::function<void()> f33 = gl::bind(foo3, 1, std::move(c));
+    auto f30 = gl::bind(foo3, _1, _2);
+    auto f31 = gl::bind(foo3, 1, _1);
+    auto f32 = gl::bind(foo3, _1, std::move(c));
+    auto f33 = gl::bind(foo3, 1, std::move(c));
+    f30(1, std::move(c));
+    f31(std::move(c));
+    f32(1);
+    f33();
 #endif
 }
 
