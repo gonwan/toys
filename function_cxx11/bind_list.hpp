@@ -7,7 +7,6 @@
 #include "reference_wrapper.hpp"
 #include "type_traits.hpp"
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 
@@ -162,7 +161,7 @@ public:
      * The const version simply is for nested bind().
      */
     template <int I>
-    typename std::add_rvalue_reference<
+    typename add_rvalue_reference<
         typename std::tuple_element<I-1, std::tuple<TArgs...> >::type
     >::type
     operator[](arg<I>) {
@@ -177,7 +176,7 @@ public:
     }
 
     template <typename T>
-    typename std::add_rvalue_reference<T>::type
+    typename add_rvalue_reference<T>::type
     operator[](value<T> &v) const {
         return std::forward<T>(v.get());
     }
@@ -210,7 +209,6 @@ public:
         typedef seq<S...> type;
     };
 
-#if 1
     template <typename R, typename F, typename A, int ...S>
     R _op(F &f, A &a, seq<S...>) {
         return unwrapper<F>::unwrap(f)(a[std::get<S>(m_tp)]...);
@@ -227,24 +225,6 @@ public:
     void _op(const F &f, A &a, seq<S...>) {
         unwrapper<const F>::unwrap(f)(a[std::get<S>(m_tp)]...);
     }
-#else
-    template <typename R, typename F, typename A, int ...S>
-    R _op(F &f, A &a, seq<S...>) {
-        return unwrapper<F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
-    }
-    template <typename R, typename F, typename A, int ...S>
-    R _op(const F &f, A &a, seq<S...>) {
-        return unwrapper<const F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
-    }
-    template <typename F, typename A, int ...S>
-    void _op(F &f, A &a, seq<S...>) {
-        unwrapper<F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
-    }
-    template <typename F, typename A, int ...S>
-    void _op(const F &f, A &a, seq<S...>) {
-        unwrapper<const F>::unwrap(f)(std::forward<decltype(a[std::get<S>(m_tp)])>(a[std::get<S>(m_tp)])...);
-    }
-#endif
 
     template <typename R, typename F, typename A>
     R operator()(type<R>, F &f, A &a) {

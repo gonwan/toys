@@ -90,6 +90,27 @@ struct integral_constant {
 typedef integral_constant<bool, true> true_type;
 typedef integral_constant<bool, false> false_type;
 
+/* __not */
+template <bool b>
+struct __not : true_type { };
+
+template <>
+struct __not<true> : false_type { };
+
+/* __and */
+template <bool b1, bool b2>
+struct __and : false_type { };
+
+template <>
+struct __and<true, true> : true_type { };
+
+/* __or */
+template <bool b1, bool b2>
+struct __or : true_type { };
+
+template <>
+struct __or<false, true> : false_type { };
+
 /* is_same */
 template <typename T, typename U>
 struct is_same : false_type { };
@@ -128,12 +149,79 @@ struct is_pointer_helper<T *> : true_type { };
 template <typename T>
 struct is_pointer : is_pointer_helper<typename remove_cv<T>::type> { };
 
-/* is_reference */
+/* is_lvalue_reference */
 template <typename T>
-struct is_reference : false_type { };
+struct is_lvalue_reference : false_type { };
 
 template <typename T>
-struct is_reference<T &> : true_type { };
+struct is_lvalue_reference<T&>: true_type { };
+
+/* is_rvalue_reference */
+template <typename T>
+struct is_rvalue_reference : false_type { };
+
+template <typename T>
+struct is_rvalue_reference<T&&> : public true_type { };
+
+/* is_reference */
+template <typename T>
+struct is_reference : __or<is_lvalue_reference<T>::value, is_rvalue_reference<T>::value >::type { };
+
+/* remove_reference */
+template <typename T>
+struct remove_reference {
+    typedef T type;
+};
+
+template <typename T>
+struct remove_reference<T&> {
+    typedef T type;
+};
+
+template<typename T>
+struct remove_reference<T&&> {
+    typedef T type;
+};
+
+/* add_lvalue_reference */
+template <typename T,
+     bool = __and<__not<is_reference<T>::value>::value,
+                  __not<is_void<T>::value>::value
+            >::value,
+     bool = is_rvalue_reference<T>::value>
+struct add_lvalue_reference_helper {
+    typedef T type;
+};
+
+template <typename T>
+struct add_lvalue_reference_helper<T, true, false> {
+    typedef T &type;
+};
+
+template <typename T>
+struct add_lvalue_reference_helper<T, false, true> {
+    typedef typename remove_reference<T>::type &type;
+};
+
+template <typename T>
+struct add_lvalue_reference : add_lvalue_reference_helper<T> { };
+
+/* add_rvalue_reference */
+template <typename T,
+         bool = __and<__not<is_reference<T>::value>::value,
+                      __not<is_void<T>::value>::value
+                >::value>
+struct add_rvalue_reference_helper {
+    typedef T type;
+};
+
+template <typename T>
+struct add_rvalue_reference_helper<T, true> {
+    typedef T &&type;
+};
+
+template <typename T>
+struct add_rvalue_reference : public add_rvalue_reference_helper<T> { };
 
 /* is_function */
 template <typename T>
