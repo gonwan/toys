@@ -1,11 +1,11 @@
 ## function/bind for c++03
 
-### Feature
-- Works like boost::function & boost::bind() in c++03 dialect.
+### Features
+- Works like `boost::function` & `boost::bind()` in c++03 dialect.
 - Supports functions, member functions, function objects & function object reference.
 - Supports up to 9 parameters.
 
-### Tested platform
+### Tested platforms
 - g++ 4.4/4.6/4.8 on Ubuntu
 - VS2005 on Windows XP & VS2013 on Windows 8.1
 
@@ -36,7 +36,7 @@ Output:
 More usage, see: [test_gl_function.cpp](test_gl_function.cpp)
 
 ### gl::bind() function
-```
+```c++
 #include <iostream>
 #include "function.hpp"
 #include "bind.hpp"

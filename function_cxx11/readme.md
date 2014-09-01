@@ -1,11 +1,11 @@
 ## function/bind for c++11
 
-### Feature
-- Works like std::function & std::bind() in c++11 dialect.
+### Features
+- Works like `std::function` & `std::bind()` in c++11 dialect.
 - Supports functions, member functions, function objects & function object reference.
 - Supports any number of parameters, thanks to the variadic template feature in c++11.
 
-### Tested platform
+### Tested platforms
 - g++ 4.6/4.7/4.8 on Ubuntu
 - VS2013 on Windows 8.1 (update3 is required)
 
@@ -31,7 +31,7 @@ Output:
 More usage, see: [test_gl_function.cpp](test_gl_function.cpp)
 
 ### gl::bind() function
-```
+```c++
 #include <iostream>
 #include "function.hpp"
 #include "bind.hpp"
