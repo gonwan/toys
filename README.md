@@ -5,7 +5,7 @@
 - See: [pycalc](pycalc)
 
 ## function
-- `boost::function/`boost:bind` like toolkit in c++03 dialect
+- `boost::function`/`boost:bind` like toolkit in c++03 dialect
 - See: [function](function)
 
 ## function_cxx11
