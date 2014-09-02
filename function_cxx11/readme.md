@@ -6,27 +6,27 @@
 - Supports any number of parameters, thanks to the variadic template feature in c++11.
 
 ### Tested platforms
-- g++ 4.6/4.7/4.8 on Ubuntu
-- VS2013 on Windows 8.1 (update3 is required)
+- g++ 4.6/4.7/4.8(-std=c++0x) on Ubuntu
+- VS2013(update3 required) on Windows 8.1 
 
 ### gl::function class
 ```c++
 #include <iostream>
 #include "function.hpp"
 
-void foo(int a, int b) {
-    std::cout << a << ","<< b << std::endl;
+void foo(int i, const char *str) {
+    std::cout << i << " " << str << std::endl;
 }
 
 int main() {
-    gl::function<void(int,int)> f2 = foo;
-    f2(1, 2);
+    gl::function<void(int,const char*)> f = foo;
+    f(1, "2");
     return 0;
 }
 ```
 Output:
 ```
-1,2
+1 2
 ```
 More usage, see: [test_gl_function.cpp](test_gl_function.cpp)
 
@@ -36,25 +36,28 @@ More usage, see: [test_gl_function.cpp](test_gl_function.cpp)
 #include "function.hpp"
 #include "bind.hpp"
 
-void foo(int a, int b) {
-    std::cout << a << ","<< b << std::endl;
+void foo(int i, const char *str) {
+    std::cout << i << " " << str << std::endl;
 }
 
 int main() {
-	/* use placeholders as arguments */
-    gl::function<void(int,int)> f1 = gl::bind(foo, _1, _2);
-    f1(1, 2);
-    gl::function<void(int)> f2 = gl::bind(foo, 3, _1);
-    f2(4);
-    gl::function<void()> f3 = gl::bind(foo, 5, 6);
+    /* use placeholders as arguments */
+    gl::function<void(int,const char*)> f0 = gl::bind(foo, _1, _2);
+    f0(1, "2");
+    gl::function<void(const char*)> f1 = gl::bind(foo, 3, _1);
+    f1("4");
+    gl::function<void(int)> f2 = gl::bind(foo, _1, "6");
+    f2(5);
+    gl::function<void()> f3 = gl::bind(foo, 7, "8");
     f3();
     return 0;
 }
 ```
 Output:
 ```
-1,2
-3,4
-5,6
+1 2
+3 4
+5 6
+7 8
 ```
 More usage, see: [test_gl_bind.cpp](test_gl_bind.cpp)

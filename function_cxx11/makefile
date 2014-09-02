@@ -18,8 +18,8 @@ $(PROG2): $(OBJS2)
 	$(CC) $(CFLAGS) $(OBJS2) -o $(PROG2) $(LIBS)
 
 check:
-	grep -n -P '\t' *.hpp *.cpp *.txt makefile || true
-	grep -n -P '\r' *.hpp *.cpp *.txt makefile || true
+	grep -n -P '\t' *.hpp *.cpp *.md makefile || true
+	grep -n -P '\r' *.hpp *.cpp *.md makefile || true
 	grep -n -P "[\x80-\xFF]" * || true
 
 clean:
