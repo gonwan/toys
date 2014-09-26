@@ -2,7 +2,7 @@
 
 ### Features
 - Demonstrate several socket models under windows/linux.
-- These are API samples, *DO NOT* use them directly in your production code.
+- These are API samples, **DO NOT** use them directly in your production code.
 - Socket models include:
   - Select (windows)
   - Async select (windows)
