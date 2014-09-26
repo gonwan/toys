@@ -6,8 +6,8 @@
 #include <poll.h>
 
 
-static int g_total_clients = 0;
-static struct pollfd g_client_socks[FD_SETSIZE];
+int g_total_clients = 0;
+struct pollfd g_client_socks[FD_SETSIZE];
 
 
 void *worker_thread(void *);

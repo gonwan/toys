@@ -10,7 +10,7 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int main()
 {
-    static char szAppName[] = "AsyncSelect Model";
+    const char appname[] = "AsyncSelect Model";
     HWND hwnd;
     MSG msg;
     WNDCLASSA wndclass;
@@ -24,13 +24,13 @@ int main()
     wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     wndclass.lpszMenuName  = NULL;
-    wndclass.lpszClassName = szAppName;
+    wndclass.lpszClassName = appname;
     if (!RegisterClassA(&wndclass)) {
-        MessageBoxA(NULL, "This program requires Windows NT!", szAppName, MB_ICONERROR);
+        MessageBoxA(NULL, "This program requires Windows NT!", appname, MB_ICONERROR);
         return 0;
     }
-    hwnd = CreateWindowA(szAppName, /* window class name */
-        szAppName,                  /* window caption */
+    hwnd = CreateWindowA(appname,   /* window class name */
+        appname,                    /* window caption */
         WS_OVERLAPPEDWINDOW,        /* window style */
         CW_USEDEFAULT,              /* initial x position */
         CW_USEDEFAULT,              /* initial y position */

@@ -5,8 +5,8 @@
 #include <pthread.h>
 
 
-static int g_total_clients = 0;
-static int g_client_socks[FD_SETSIZE];
+int g_total_clients = 0;
+int g_client_socks[FD_SETSIZE];
 
 
 void *worker_thread(void *);

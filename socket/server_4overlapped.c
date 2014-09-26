@@ -9,13 +9,13 @@ typedef struct {
     char          msg[MSGSIZE];
     DWORD         bytes_received;
     DWORD         flags;
-} PER_IO_OPERATION_DATA, *LPPER_IO_OPERATION_DATA;
+} io_operation_data_t;
 
 
 int g_total_clients = 0;
 SOCKET g_client_socks[MAXIMUM_WAIT_OBJECTS];
 WSAEVENT g_client_events[MAXIMUM_WAIT_OBJECTS];
-LPPER_IO_OPERATION_DATA g_per_io_data_array[MAXIMUM_WAIT_OBJECTS];
+io_operation_data_t *g_pio_data_array[MAXIMUM_WAIT_OBJECTS];
 
 
 DWORD WINAPI WorkerThread(LPVOID);
@@ -45,22 +45,22 @@ int main()
         printf("Socket[%d] accepted: %s:%d.\n", client_sock, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 #endif
         g_client_socks[g_total_clients] = client_sock;
-        /* Associate a PER_IO_OPERATION_DATA structure */
-        g_per_io_data_array[g_total_clients] = (LPPER_IO_OPERATION_DATA)HeapAlloc(
+        /* Associate a io_operation_data_t structure */
+        g_pio_data_array[g_total_clients] = (io_operation_data_t *)HeapAlloc(
             GetProcessHeap(),
             HEAP_ZERO_MEMORY,
-            sizeof(PER_IO_OPERATION_DATA));
-        g_per_io_data_array[g_total_clients]->buffer.len = MSGSIZE;
-        g_per_io_data_array[g_total_clients]->buffer.buf = g_per_io_data_array[g_total_clients]->msg;
-        g_client_events[g_total_clients] = g_per_io_data_array[g_total_clients]->overlap.hEvent = WSACreateEvent();
+            sizeof(io_operation_data_t));
+        g_pio_data_array[g_total_clients]->buffer.len = MSGSIZE;
+        g_pio_data_array[g_total_clients]->buffer.buf = g_pio_data_array[g_total_clients]->msg;
+        g_client_events[g_total_clients] = g_pio_data_array[g_total_clients]->overlap.hEvent = WSACreateEvent();
         /* Launch an asynchronous operation */
-        memset(g_per_io_data_array[g_total_clients]->msg, 0, MSGSIZE);
+        memset(g_pio_data_array[g_total_clients]->msg, 0, MSGSIZE);
         WSARecv(g_client_socks[g_total_clients],
-            &g_per_io_data_array[g_total_clients]->buffer,
+            &g_pio_data_array[g_total_clients]->buffer,
             1,
-            &g_per_io_data_array[g_total_clients]->bytes_received,
-            &g_per_io_data_array[g_total_clients]->flags,
-            &g_per_io_data_array[g_total_clients]->overlap,
+            &g_pio_data_array[g_total_clients]->bytes_received,
+            &g_pio_data_array[g_total_clients]->flags,
+            &g_pio_data_array[g_total_clients]->overlap,
             NULL);
         g_total_clients++;
     }
@@ -82,23 +82,23 @@ DWORD WINAPI WorkerThread(LPVOID lpParam)
         index = rc - WSA_WAIT_EVENT_0;
         WSAResetEvent(g_client_events[index]);
         WSAGetOverlappedResult(g_client_socks[index],
-            &g_per_io_data_array[index]->overlap,
+            &g_pio_data_array[index]->overlap,
             &cbTransferred,
             TRUE,
-            &g_per_io_data_array[g_total_clients]->flags);
+            &g_pio_data_array[g_total_clients]->flags);
         if (cbTransferred == 0) { /* error */
             Cleanup(index);
         } else {
-            /* g_per_io_data_array[index]->msg contains the received data */
-            printf("Socket[%d] received message: %s.\n", g_client_socks[index], g_per_io_data_array[index]->msg);
+            /* g_pio_data_array[index]->msg contains the received data */
+            printf("Socket[%d] received message: %s.\n", g_client_socks[index], g_pio_data_array[index]->msg);
             /* Launch another asynchronous operation */
-            memset(g_per_io_data_array[index]->msg, 0, MSGSIZE);
+            memset(g_pio_data_array[index]->msg, 0, MSGSIZE);
             WSARecv(g_client_socks[index],
-                &g_per_io_data_array[index]->buffer,
+                &g_pio_data_array[index]->buffer,
                 1,
-                &g_per_io_data_array[index]->bytes_received,
-                &g_per_io_data_array[index]->flags,
-                &g_per_io_data_array[index]->overlap,
+                &g_pio_data_array[index]->bytes_received,
+                &g_pio_data_array[index]->flags,
+                &g_pio_data_array[index]->overlap,
                 NULL);
         }
     }
@@ -109,11 +109,11 @@ void Cleanup(int index)
 {
     closesocket(g_client_socks[index]);
     WSACloseEvent(g_client_events[index]);
-    HeapFree(GetProcessHeap(), 0, g_per_io_data_array[index]);
+    HeapFree(GetProcessHeap(), 0, g_pio_data_array[index]);
     if (index < g_total_clients-1) {
         g_client_socks[index] = g_client_socks[g_total_clients-1];
         g_client_events[index] = g_client_events[g_total_clients-1];
-        g_per_io_data_array[index] = g_per_io_data_array[g_total_clients-1];
+        g_pio_data_array[index] = g_pio_data_array[g_total_clients-1];
     }
-    g_per_io_data_array[--g_total_clients] = NULL;
+    g_pio_data_array[--g_total_clients] = NULL;
 }

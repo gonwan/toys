@@ -1,7 +1,7 @@
 # toys - Toy Project for Practice
 
 ## pycalc
-- polynomial calculator for python
+- Polynomial calculator for python
 - See: [pycalc](pycalc)
 
 ## function
@@ -11,3 +11,7 @@
 ## function_cxx11
 - `std::function`/`std::bind` like toolkit in c++11 dialect
 - See: [function_cxx11](function_cxx11)
+
+## socket
+- Demonstrate several socket models under windows/linux
+- See: [socket](socket)

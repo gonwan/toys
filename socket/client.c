@@ -24,7 +24,7 @@ int main()
     server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
     server_addr.sin_port = htons(SERVER_PORT);
     memset(client_socks, 0xff, sizeof(client_socks)); /* -1 */
-    /* simulate multi-threading here, to simply code :) */
+    /* simulate multi-threading here, to avoid separate windows/linux code :) */
     while (1) {
         for (i = 0; i < MAX_CLIENT; i++) {
             int r = rand() % MAX_CLIENT;

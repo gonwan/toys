@@ -9,7 +9,7 @@
 #define MAX_EVENTS 10
 
 
-static int g_epollfd = 0;
+int g_epollfd = 0;
 struct epoll_event g_events[MAX_EVENTS];
 
 
