@@ -5,61 +5,6 @@
 #include <stdio.h>
 
 
-static int windows_mutex_init(void **priv);
-static int windows_mutex_destroy(void **lock);
-static int windows_mutex_lock(void **lock);
-static int windows_mutex_unlock(void **lock);
-static unsigned long windows_thread_id(void);
-
-int windows_mutex_init(void **priv)
-{
-    HANDLE mutex;
-    mutex = CreateMutexA(NULL, FALSE, NULL);
-    if (mutex == NULL) {
-        return GetLastError();
-    }
-    *priv = mutex;
-    return 0;
-}
-
-int windows_mutex_destroy(void **lock)
-{
-    BOOL ret = CloseHandle((HANDLE)*lock);
-    if (!ret) {
-        return GetLastError();
-    }
-    return 0;
-}
-
-int windows_mutex_lock(void **lock)
-{
-    return WaitForSingleObject((HANDLE)*lock, INFINITE);
-}
-
-int windows_mutex_unlock(void **lock)
-{
-    return ReleaseMutex((HANDLE)*lock);
-}
-
-unsigned long windows_thread_id(void)
-{
-    return (unsigned long)GetCurrentThreadId();
-}
-
-thread_callbacks_t *thread_get_callbacks()
-{
-    static thread_callbacks_t windows_callbacks = {
-        "windows_callbacks",
-        windows_mutex_init,
-        windows_mutex_destroy,
-        windows_mutex_lock,
-        windows_mutex_unlock,
-        windows_thread_id
-    };
-    return &windows_callbacks;
-}
-
-
 typedef struct _job_t {
     thread_func_t threadfunc;
     void *arg;

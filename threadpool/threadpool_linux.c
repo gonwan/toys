@@ -1,74 +1,10 @@
 #ifdef __linux__
 #include "threadpool.h"
 #include "list.h"
-#include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-
-static int linux_mutex_init(void **priv);
-static int linux_mutex_destroy(void **lock);
-static int linux_mutex_lock(void **lock);
-static int linux_mutex_unlock(void **lock);
-static unsigned long linux_thread_id(void);
-
-int linux_mutex_init(void **priv)
-{
-    int err;
-    pthread_mutex_t *lock;
-    err = 0;
-    lock = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-    if (lock == NULL) {
-        err = ENOMEM;
-    }
-    if (!err) {
-        err = pthread_mutex_init(lock, NULL);
-        if (err) {
-            free(lock);
-        } else {
-            *priv = lock;
-        }
-    }
-    return err;
-}
-
-int linux_mutex_destroy(void **lock)
-{
-    int err;
-    err = pthread_mutex_destroy((pthread_mutex_t*)*lock);
-    free(*lock);
-    return err;
-}
-
-int linux_mutex_lock(void **lock)
-{
-    return pthread_mutex_lock((pthread_mutex_t*)*lock);
-}
-
-int linux_mutex_unlock(void **lock)
-{
-    return pthread_mutex_unlock((pthread_mutex_t*)*lock);
-}
-
-unsigned long linux_thread_id(void)
-{
-    return (unsigned long)pthread_self();
-}
-
-thread_callbacks_t *thread_get_callbacks()
-{
-    static thread_callbacks_t linux_callbacks = {
-        "linux_callbacks",
-        linux_mutex_init,
-        linux_mutex_destroy,
-        linux_mutex_lock,
-        linux_mutex_unlock,
-        linux_thread_id
-    };
-    return &linux_callbacks;
-}
 
 
 typedef struct _job_t {
