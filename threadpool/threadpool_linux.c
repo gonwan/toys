@@ -1,11 +1,11 @@
 #ifdef __linux__
 #include "threadpool.h"
 #include "list.h"
+#include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
 
 
 static int linux_mutex_init(void **priv);

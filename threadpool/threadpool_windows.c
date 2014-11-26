@@ -203,8 +203,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         list_free_all(pool->job_list);
         pool->job_list = NULL;
         ReleaseMutex(pool->job_list_mutex);
-    }
-    else { /* wait job list */
+    } else { /* wait job list */
         while (1) {
             WaitForSingleObject(pool->job_list_mutex, INFINITE);
             if (list_length(pool->job_list) == 0) {
@@ -253,7 +252,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         if (worker->state != WK_TERMINATED) {
             if (worker->handle != NULL) {
 #if 0
-                /* GetThreadId() requires windows 2003 and later */
+                /* GetThreadId() requires windows 2003 or later */
                 fprintf(stderr, "terminating thread %p\n", worker->handle);
 #endif
                 /*
