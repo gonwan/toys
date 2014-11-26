@@ -1,8 +1,8 @@
 /*
- * cl list.c thread_windows.c test_thread.c -o test_thread
- * gcc list.c thread_linux.c test_thread.c -o test_thread -lpthread
+ * cl list.c threadpool_windows.c test_threadpool.c -o test_threadpool
+ * gcc list.c threadpool_linux.c test_threadpool.c -o test_threadpool -lpthread
  */
-#include "thread.h"
+#include "threadpool.h"
 #include <stdio.h>
 #define _CRT_RAND_S
 #include <stdlib.h>

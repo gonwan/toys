@@ -1,73 +1,62 @@
-#ifdef __linux__
-#include "thread.h"
+#ifdef _WIN32
+#include "threadpool.h"
 #include "list.h"
-#include <pthread.h>
+#include <windows.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 
 
-static int linux_mutex_init(void **priv);
-static int linux_mutex_destroy(void **lock);
-static int linux_mutex_lock(void **lock);
-static int linux_mutex_unlock(void **lock);
-static unsigned long linux_thread_id(void);
+static int windows_mutex_init(void **priv);
+static int windows_mutex_destroy(void **lock);
+static int windows_mutex_lock(void **lock);
+static int windows_mutex_unlock(void **lock);
+static unsigned long windows_thread_id(void);
 
-int linux_mutex_init(void **priv)
+int windows_mutex_init(void **priv)
 {
-    int err;
-    pthread_mutex_t *lock;
-    err = 0;
-    lock = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-    if (lock == NULL) {
-        err = ENOMEM;
+    HANDLE mutex;
+    mutex = CreateMutexA(NULL, FALSE, NULL);
+    if (mutex == NULL) {
+        return GetLastError();
     }
-    if (!err) {
-        err = pthread_mutex_init(lock, NULL);
-        if (err) {
-            free(lock);
-        } else {
-            *priv = lock;
-        }
+    *priv = mutex;
+    return 0;
+}
+
+int windows_mutex_destroy(void **lock)
+{
+    BOOL ret = CloseHandle((HANDLE)*lock);
+    if (!ret) {
+        return GetLastError();
     }
-    return err;
+    return 0;
 }
 
-int linux_mutex_destroy(void **lock)
+int windows_mutex_lock(void **lock)
 {
-    int err;
-    err = pthread_mutex_destroy((pthread_mutex_t*)*lock);
-    free(*lock);
-    return err;
+    return WaitForSingleObject((HANDLE)*lock, INFINITE);
 }
 
-int linux_mutex_lock(void **lock)
+int windows_mutex_unlock(void **lock)
 {
-    return pthread_mutex_lock((pthread_mutex_t*)*lock);
+    return ReleaseMutex((HANDLE)*lock);
 }
 
-int linux_mutex_unlock(void **lock)
+unsigned long windows_thread_id(void)
 {
-    return pthread_mutex_unlock((pthread_mutex_t*)*lock);
-}
-
-unsigned long linux_thread_id(void)
-{
-    return (unsigned long)pthread_self();
+    return (unsigned long)GetCurrentThreadId();
 }
 
 thread_callbacks_t *thread_get_callbacks()
 {
-    static thread_callbacks_t linux_callbacks = {
-        "linux_callbacks",
-        linux_mutex_init,
-        linux_mutex_destroy,
-        linux_mutex_lock,
-        linux_mutex_unlock,
-        linux_thread_id
+    static thread_callbacks_t windows_callbacks = {
+        "windows_callbacks",
+        windows_mutex_init,
+        windows_mutex_destroy,
+        windows_mutex_lock,
+        windows_mutex_unlock,
+        windows_thread_id
     };
-    return &linux_callbacks;
+    return &windows_callbacks;
 }
 
 
@@ -83,9 +72,9 @@ typedef enum _worker_state_e {
 } worker_state_e;
 
 typedef struct _worker_t {
-    pthread_t pid;
+    HANDLE handle;
     volatile worker_state_e state;
-    thread_func_t func;
+    LPTHREAD_START_ROUTINE func;
     void *arg;
 } worker_t;
 
@@ -106,44 +95,51 @@ struct _thread_pool_t {
     /* current waiting job list */
     list_t *job_list;
     /* mutex to lock the job list */
-    pthread_mutex_t job_list_mutex;
-    /* condition used with the state of thread pool */
-    pthread_cond_t state_condition;
+    HANDLE job_list_mutex;
+    /* event to set when there is any new job added into the job list */
+    HANDLE job_added_event;
+    /* event to set when terminated */
+    HANDLE terminated_event;
 };
 
 
-static void *thread_pool_internal_callback(void *arg)
+static DWORD WINAPI thread_pool_internal_callback(void *arg)
 {
     worker_t *worker;
     thread_pool_t *pool;
     list_t *jobnode;
     job_t *job;
+    HANDLE handles[2];
+    DWORD ret;
 
     worker = (worker_t *)arg;
-    pool = (thread_pool_t *)(worker->arg);
-
+    pool = (thread_pool_t *)worker->arg;
+    handles[0] = pool->job_added_event;
+    handles[1] = pool->terminated_event;
     while (1) {
         /* if job list is not empty, get one */
-        pthread_mutex_lock(&pool->job_list_mutex);
-        while (list_length(pool->job_list) == 0) {
-            pthread_cond_wait(&pool->state_condition, &pool->job_list_mutex);
-            if (pool->state == TP_TERMINATED) {
-                worker->state = WK_TERMINATED;
+        job = NULL;
+        while (1) {
+            WaitForSingleObject(pool->job_list_mutex, INFINITE);
+            if (list_length(pool->job_list) == 0) {
+                ReleaseMutex(pool->job_list_mutex);
+                ret = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+                if (ret = WAIT_OBJECT_0 + 1) {
+                    worker->state = WK_TERMINATED;
+                    break;
+                }
+            } else {
+                jobnode = pool->job_list;
+                job = (job_t *)jobnode->data;
+                pool->job_list = list_remove_link(jobnode, jobnode);
+                ReleaseMutex(pool->job_list_mutex);
                 break;
             }
         }
-        job = NULL;
-        if (pool->state == TP_TERMINATED) {
-            pthread_mutex_unlock(&pool->job_list_mutex);
-            break;
-        } else {
-            jobnode = pool->job_list;
-            job = (job_t *)jobnode->data;
-            pool->job_list = list_remove_link(jobnode, jobnode);
-            pthread_mutex_unlock(&pool->job_list_mutex);
-        }
         /* do not check status, since we are not protected by mutex now */
-        if (job) {
+        if (!job) {
+            break; /* terminated */
+        } else {
             worker->state = WK_RUNNING;
             job->threadfunc(job->arg);
             worker->state = WK_IDLE;
@@ -152,7 +148,7 @@ static void *thread_pool_internal_callback(void *arg)
         }
     }
 
-    return NULL;
+    return 0;
 }
 
 thread_pool_t *thread_pool_create(int max)
@@ -165,16 +161,18 @@ thread_pool_t *thread_pool_create(int max)
     pool->state = TP_NONE;
     pool->woker_list = NULL;
     pool->job_list = NULL;
-    pthread_mutex_init(&pool->job_list_mutex, NULL);
-    pthread_cond_init(&pool->state_condition, NULL);
+    pool->job_list_mutex = CreateMutexA(NULL, FALSE, NULL);
+    pool->job_added_event = CreateEventA(NULL, FALSE, FALSE, NULL);
+    pool->terminated_event = CreateEventA(NULL, TRUE, FALSE, NULL);
     rc = 0;
     for (i = 0; i < pool->max; i++) {
         worker = (worker_t *)malloc(sizeof(worker_t));
         worker->state = WK_IDLE;
         worker->func = thread_pool_internal_callback;
         worker->arg = pool;
-        rc = pthread_create(&worker->pid, NULL, worker->func, worker);
-        if (rc) {
+        worker->handle = CreateThread(NULL, 0, worker->func, worker, 0, NULL);
+        if (worker->handle == NULL) {
+            rc = -1;
             break;
         }
         pool->woker_list = list_append(pool->woker_list, worker);
@@ -195,7 +193,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
 
     pool->state = TP_TERMINATING;
     if (!wait) { /* clear job list */
-        pthread_mutex_lock(&pool->job_list_mutex);
+        WaitForSingleObject(pool->job_list_mutex, INFINITE);
         temp = pool->job_list;
         while (temp) {
             job = (job_t *)temp->data;
@@ -204,34 +202,30 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         }
         list_free_all(pool->job_list);
         pool->job_list = NULL;
-        pthread_mutex_unlock(&pool->job_list_mutex);
-    } else { /* wait on job list */
+        ReleaseMutex(pool->job_list_mutex);
+    }
+    else { /* wait job list */
         while (1) {
-            pthread_mutex_lock(&pool->job_list_mutex);
+            WaitForSingleObject(pool->job_list_mutex, INFINITE);
             if (list_length(pool->job_list) == 0) {
-                pthread_mutex_unlock(&pool->job_list_mutex);
+                ReleaseMutex(pool->job_list_mutex);
                 break;
             } else {
-                pthread_mutex_unlock(&pool->job_list_mutex);
-                sleep(1);
+                ReleaseMutex(pool->job_list_mutex);
+                Sleep(1000);
             }
         }
     }
     /* now the job list is empty */
     pool->state = TP_TERMINATED;
+    SetEvent(pool->terminated_event);
     /* wait for idle threads */
     tick = timeout;
     while (tick > 0) {
         static const int t = 5;
-        sleep(t);
+        Sleep(t*1000);
         tick -= t;
         finished = 1;
-        /*
-         * pthread_cond_broadcast() does nothing if no thread is currently waiting on the condition.
-         * So we need to broadcast the terminated state of thread pool in every loop.
-         * No mutex is here to protect it, since there's no possibility to change it to another state.
-         */
-        pthread_cond_broadcast(&pool->state_condition);
         temp = pool->woker_list;
         while (temp) {
             worker = (worker_t *)temp->data;
@@ -239,10 +233,11 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
             if (worker->state != WK_TERMINATED) {
                 finished = 0;
             } else {
-                if (worker->pid != 0) {
+                if (worker->handle != NULL) {
                     finished = 0;
-                    pthread_join(worker->pid, NULL);
-                    worker->pid = 0;
+                    WaitForSingleObject(worker->handle, INFINITE);
+                    CloseHandle(worker->handle);
+                    worker->handle = NULL;
                 }
             }
         }
@@ -256,16 +251,18 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         worker = (worker_t *)temp->data;
         temp = temp->next;
         if (worker->state != WK_TERMINATED) {
-            if (worker->pid != 0) {
+            if (worker->handle != NULL) {
 #if 0
-                fprintf(stderr, "terminating thread %lu\n", worker->pid);
+                /* GetThreadId() requires windows 2003 and later */
+                fprintf(stderr, "terminating thread %p\n", worker->handle);
 #endif
                 /*
                  * Suppose to be safe here.
                  * In implementation of apr and glib, they just abandon the hanging threads.
                  */
-                pthread_cancel(worker->pid);
-                worker->pid = 0;
+                TerminateThread(worker->handle, -1);
+                CloseHandle(worker->handle);
+                worker->handle = NULL;
             }
         }
         free(worker);
@@ -273,8 +270,9 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
     list_free_all(pool->woker_list);
     pool->woker_list = NULL;
     /* free thread pool */
-    pthread_mutex_destroy(&pool->job_list_mutex);
-    pthread_cond_destroy(&pool->state_condition);
+    CloseHandle(pool->job_list_mutex);
+    CloseHandle(pool->job_added_event);
+    CloseHandle(pool->terminated_event);
     free(pool);
 }
 
@@ -288,11 +286,11 @@ int thread_pool_add_job(thread_pool_t *pool, thread_func_t func, void *arg)
     job = (job_t *)malloc(sizeof(job_t));
     job->threadfunc = func;
     job->arg = arg;
-    pthread_mutex_lock(&pool->job_list_mutex);
+    WaitForSingleObject(pool->job_list_mutex, INFINITE);
     pool->job_list = list_append(pool->job_list, job);
-    pthread_mutex_unlock(&pool->job_list_mutex);
     pool->state = TP_JOB_ADDED;
-    pthread_cond_signal(&pool->state_condition); /* not necessary between mutex lock */
+    SetEvent(pool->job_added_event);
+    ReleaseMutex(pool->job_list_mutex);
     return 0;
 }
 
