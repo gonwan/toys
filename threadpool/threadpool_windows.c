@@ -232,9 +232,9 @@ int thread_pool_add_job(thread_pool_t *pool, thread_func_t func, void *arg)
     job->arg = arg;
     WaitForSingleObject(pool->job_list_mutex, INFINITE);
     pool->job_list = list_append(pool->job_list, job);
-    pool->state = TP_JOB_ADDED;
-    SetEvent(pool->job_added_event);
     ReleaseMutex(pool->job_list_mutex);
+    pool->state = TP_JOB_ADDED;
+    SetEvent(pool->job_added_event); /* not necessary between mutex lock */
     return 0;
 }
 
