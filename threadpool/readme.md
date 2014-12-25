@@ -9,7 +9,7 @@
 
 ### How to use
 ```c
-#include "thread.h"
+#include "threadpool.h"
 #include <stdio.h>
 
 void *job_callback(void *p)
