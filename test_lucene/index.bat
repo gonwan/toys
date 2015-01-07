@@ -1,7 +1,7 @@
 @echo off
 set CLASSPATH=.;..\lib\lucene-core-4.7.2.jar;..\lib\lucene-analyzers-common-4.7.2.jar;..\lib\lucene-queryparser-4.7.2.jar
 
-set docs=../docs
+set docs=..\docs
 if "%~1"=="" goto do_index
 set docs="%~1"
 
