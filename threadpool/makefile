@@ -1,5 +1,5 @@
 CC     := gcc
-CFLAGS := -pedantic -Wall -Wextra
+CFLAGS := -pedantic -Wall -Wextra -Wno-unused-function
 LIBS   := -lpthread
 OBJS   := threadpool_linux.o test_threadpool.o
 PROG   := test_threadpool

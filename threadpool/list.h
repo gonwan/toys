@@ -1,5 +1,5 @@
-#ifndef _LIST2_H
-#define _LIST2_H
+#ifndef _LIST_H
+#define _LIST_H
 
 
 typedef struct _list_t {
