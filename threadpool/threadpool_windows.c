@@ -102,7 +102,7 @@ thread_pool_t *thread_pool_create(size_t size)
     rc = 0;
     for (i = 0; i < pool->size; i++) {
         worker = (worker_t *)malloc(sizeof(worker_t));
-        memset(&worker, 0, sizeof(worker_t));
+        memset(worker, 0, sizeof(worker_t));
         worker->state = WK_IDLE;
         worker->func = thread_pool_internal_callback;
         worker->arg = pool;
