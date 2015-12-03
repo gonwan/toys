@@ -1,6 +1,6 @@
 /*
- * cl list.c threadpool_windows.c test_threadpool.c -o test_threadpool
- * gcc list.c threadpool_linux.c test_threadpool.c -o test_threadpool -lpthread
+ * cl threadpool_windows.c test_threadpool.c -o test_threadpool
+ * gcc threadpool_linux.c test_threadpool.c -o test_threadpool -lpthread
  */
 #include "threadpool.h"
 #include <stdio.h>
