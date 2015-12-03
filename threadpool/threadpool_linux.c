@@ -55,7 +55,7 @@ static void *thread_pool_internal_callback(void *arg)
     job_t *job;
 
     worker = (worker_t *)arg;
-    pool = (thread_pool_t *)(worker->arg);
+    pool = (thread_pool_t *)worker->arg;
 
     while (1) {
         /* if job list is not empty, get one */
@@ -141,7 +141,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         list_free_all(pool->job_list);
         pool->job_list = NULL;
         pthread_mutex_unlock(&pool->job_list_mutex);
-    } else { /* wait on job list */
+    } else { /* wait for job list */
         while (1) {
             pthread_mutex_lock(&pool->job_list_mutex);
             if (list_length(pool->job_list) == 0) {
