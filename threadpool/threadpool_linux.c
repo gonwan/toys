@@ -1,10 +1,11 @@
 #ifdef __linux__
 #include "threadpool.h"
 #include "list.h"
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 
 typedef struct _job_t {
@@ -92,6 +93,7 @@ thread_pool_t *thread_pool_create(size_t size)
     worker_t *worker;
 
     thread_pool_t *pool = (thread_pool_t *)malloc(sizeof(thread_pool_t));
+    memset(pool, 0, sizeof(thread_pool_t));
     pool->size = size;
     pool->state = TP_RUNNING;
     pool->woker_list = NULL;
@@ -101,11 +103,13 @@ thread_pool_t *thread_pool_create(size_t size)
     rc = 0;
     for (i = 0; i < pool->size; i++) {
         worker = (worker_t *)malloc(sizeof(worker_t));
+        memset(&worker, 0, sizeof(worker_t));
         worker->state = WK_IDLE;
         worker->func = thread_pool_internal_callback;
         worker->arg = pool;
         rc = pthread_create(&worker->pid, NULL, worker->func, worker);
         if (rc) {
+            worker->pid = 0;
             break;
         }
         pool->woker_list = list_append(pool->woker_list, worker);
