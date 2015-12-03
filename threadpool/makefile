@@ -1,7 +1,7 @@
 CC     := gcc
 CFLAGS := -pedantic -Wall -Wextra
 LIBS   := -lpthread
-OBJS   := list.o threadpool_linux.o test_threadpool.o
+OBJS   := threadpool_linux.o test_threadpool.o
 PROG   := test_threadpool
 
 all: $(PROG)

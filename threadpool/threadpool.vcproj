@@ -175,10 +175,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\list.c"
-				>
-			</File>
-			<File
 				RelativePath=".\test_threadpool.c"
 				>
 			</File>
@@ -192,10 +188,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\list.h"
-				>
-			</File>
 			<File
 				RelativePath=".\threadpool.h"
 				>
