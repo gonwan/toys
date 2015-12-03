@@ -94,8 +94,8 @@ thread_pool_t *thread_pool_create(size_t size)
     memset(pool, 0, sizeof(thread_pool_t));
     pool->size = size;
     pool->state = TP_RUNNING;
-    LIST_HEAD_INIT(&pool->worker_list);
-    LIST_HEAD_INIT(&pool->job_list);
+    LIST_INIT(&pool->worker_list);
+    LIST_INIT(&pool->job_list);
     pool->job_list_mutex = CreateMutexA(NULL, FALSE, NULL);
     pool->job_added_event = CreateEventA(NULL, FALSE, FALSE, NULL);
     rc = 0;

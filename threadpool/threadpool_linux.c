@@ -95,8 +95,8 @@ thread_pool_t *thread_pool_create(size_t size)
     memset(pool, 0, sizeof(thread_pool_t));
     pool->size = size;
     pool->state = TP_RUNNING;
-    LIST_HEAD_INIT(&pool->worker_list);
-    LIST_HEAD_INIT(&pool->job_list);
+    LIST_INIT(&pool->worker_list);
+    LIST_INIT(&pool->job_list);
     pthread_mutex_init(&pool->job_list_mutex, NULL);
     pthread_cond_init(&pool->job_added_condition, NULL);
     rc = 0;

@@ -8,11 +8,7 @@ typedef struct _list_t {
 } list_t;
 
 
-#define __LIST_HEAD_INIT(name) { &(name), &(name) }
-
-#define LIST_HEAD(name) struct list_head name = __LIST_HEAD_INIT(name)
-
-#define LIST_HEAD_INIT(ptr) do { \
+#define LIST_INIT(ptr) do { \
     (ptr)->next = (ptr); (ptr)->prev = (ptr); \
 } while (0)
 
@@ -23,22 +19,22 @@ static int list_empty(const list_t *head)
     return (next == head) && (next == head->prev);
 }
 
-static void __list_add(list_t *new, list_t *prev, list_t *next)
+static void __list_add(list_t *entry, list_t *prev, list_t *next)
 {
-    new->next = next;
-    new->prev = prev;
-    next->prev = new;
-    prev->next = new;
+    entry->next = next;
+    entry->prev = prev;
+    next->prev = entry;
+    prev->next = entry;
 }
 
-static void list_add(list_t *new, list_t *head)
+static void list_add(list_t *entry, list_t *head)
 {
-    __list_add(new, head, head->next);
+    __list_add(entry, head, head->next);
 }
 
-static void list_add_tail(list_t *new, list_t *head)
+static void list_add_tail(list_t *entry, list_t *head)
 {
-    __list_add(new, head->prev, head);
+    __list_add(entry, head->prev, head);
 }
 
 static void __list_del(list_t *prev, list_t *next)
