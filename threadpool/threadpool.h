@@ -2,6 +2,9 @@
 #define _THREADPOOL_H
 
 
+#include <stddef.h>
+
+
 /* forward declaration */
 typedef struct _thread_pool_t thread_pool_t;
 /* thread callback function */
@@ -10,10 +13,10 @@ typedef void *(*thread_func_t)(void *arg);
 
 /**
  * Create thread pool.
- * @param max maximum threads to create in the thread pool
+ * @param size number of threads to create in the thread pool
  * @return newly created thread pool, or NULL if fails
  */
-thread_pool_t *thread_pool_create(/*in*/ int max);
+thread_pool_t *thread_pool_create(/*in*/ size_t size);
 /**
  * Terminate thread pool.
  * @param pool the thread pool to terminate

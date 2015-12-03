@@ -26,15 +26,14 @@ typedef struct _worker_t {
 } worker_t;
 
 typedef enum _thread_pool_state_e {
-    TP_NONE,
-    TP_JOB_ADDED,
+    TP_RUNNING,
     TP_TERMINATING,
     TP_TERMINATED
 } thread_pool_state_e;
 
 struct _thread_pool_t {
-    /* max thread count to create */
-    int max;
+    /* number of threads to create */
+    size_t size;
     /* state set when a new job is added or the thread pool is terminated */
     volatile thread_pool_state_e state;
     /* created worker list */
@@ -43,8 +42,8 @@ struct _thread_pool_t {
     list_t *job_list;
     /* mutex to lock the job list */
     pthread_mutex_t job_list_mutex;
-    /* condition used with the state of thread pool */
-    pthread_cond_t state_condition;
+    /* condition used when there is any new job added into the job list */
+    pthread_cond_t job_added_condition;
 };
 
 
@@ -62,7 +61,7 @@ static void *thread_pool_internal_callback(void *arg)
         /* if job list is not empty, get one */
         pthread_mutex_lock(&pool->job_list_mutex);
         while (list_length(pool->job_list) == 0) {
-            pthread_cond_wait(&pool->state_condition, &pool->job_list_mutex);
+            pthread_cond_wait(&pool->job_added_condition, &pool->job_list_mutex);
             if (pool->state == TP_TERMINATED) {
                 worker->state = WK_TERMINATED;
                 break;
@@ -91,20 +90,21 @@ static void *thread_pool_internal_callback(void *arg)
     return NULL;
 }
 
-thread_pool_t *thread_pool_create(int max)
+thread_pool_t *thread_pool_create(size_t size)
 {
-    int i, rc;
+    int rc;
+    size_t i;
     worker_t *worker;
 
     thread_pool_t *pool = (thread_pool_t *)malloc(sizeof(thread_pool_t));
-    pool->max = max;
-    pool->state = TP_NONE;
+    pool->size = size;
+    pool->state = TP_RUNNING;
     pool->woker_list = NULL;
     pool->job_list = NULL;
     pthread_mutex_init(&pool->job_list_mutex, NULL);
-    pthread_cond_init(&pool->state_condition, NULL);
+    pthread_cond_init(&pool->job_added_condition, NULL);
     rc = 0;
-    for (i = 0; i < pool->max; i++) {
+    for (i = 0; i < pool->size; i++) {
         worker = (worker_t *)malloc(sizeof(worker_t));
         worker->state = WK_IDLE;
         worker->func = thread_pool_internal_callback;
@@ -167,7 +167,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
          * So we need to broadcast the terminated state of thread pool in every loop.
          * No mutex is here to protect it, since there's no possibility to change it to another state.
          */
-        pthread_cond_broadcast(&pool->state_condition);
+        pthread_cond_broadcast(&pool->job_added_condition);
         temp = pool->woker_list;
         while (temp) {
             worker = (worker_t *)temp->data;
@@ -210,7 +210,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
     pool->woker_list = NULL;
     /* free thread pool */
     pthread_mutex_destroy(&pool->job_list_mutex);
-    pthread_cond_destroy(&pool->state_condition);
+    pthread_cond_destroy(&pool->job_added_condition);
     free(pool);
 }
 
@@ -227,8 +227,7 @@ int thread_pool_add_job(thread_pool_t *pool, thread_func_t func, void *arg)
     pthread_mutex_lock(&pool->job_list_mutex);
     pool->job_list = list_append(pool->job_list, job);
     pthread_mutex_unlock(&pool->job_list_mutex);
-    pool->state = TP_JOB_ADDED;
-    pthread_cond_signal(&pool->state_condition); /* not necessary between mutex lock */
+    pthread_cond_signal(&pool->job_added_condition); /* not necessary between mutex lock */
     return 0;
 }
 
