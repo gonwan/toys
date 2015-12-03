@@ -1,6 +1,6 @@
 #ifdef _WIN32
 #include "threadpool.h"
-#include "list.h"
+#include "list2.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +8,7 @@
 
 
 typedef struct _job_t {
+    list_t link;
     thread_func_t threadfunc;
     void *arg;
 } job_t;
@@ -19,6 +20,7 @@ typedef enum _worker_state_e {
 } worker_state_e;
 
 typedef struct _worker_t {
+    list_t link;
     HANDLE handle;
     volatile worker_state_e state;
     LPTHREAD_START_ROUTINE func;
@@ -37,9 +39,9 @@ struct _thread_pool_t {
     /* state set when a new job is added or the thread pool is terminated */
     volatile thread_pool_state_e state;
     /* created worker list */
-    list_t *woker_list;
+    list_t worker_list;
     /* current waiting job list */
-    list_t *job_list;
+    list_t job_list;
     /* mutex to lock the job list */
     HANDLE job_list_mutex;
     /* event to set when there is any new job added into the job list */
@@ -49,10 +51,9 @@ struct _thread_pool_t {
 
 static DWORD WINAPI thread_pool_internal_callback(void *arg)
 {
-    worker_t *worker;
     thread_pool_t *pool;
-    list_t *jobnode;
     job_t *job;
+    worker_t *worker;
 
     worker = (worker_t *)arg;
     pool = (thread_pool_t *)worker->arg;
@@ -66,10 +67,9 @@ static DWORD WINAPI thread_pool_internal_callback(void *arg)
         job = NULL;
         WaitForSingleObject(pool->job_added_event, INFINITE);
         WaitForSingleObject(pool->job_list_mutex, INFINITE);
-        if (list_length(pool->job_list) != 0) {
-            jobnode = pool->job_list;
-            job = (job_t *)jobnode->data;
-            pool->job_list = list_remove_link(jobnode, jobnode);
+        if (!list_empty(&pool->job_list)) {
+            job = (job_t *)pool->job_list.next;
+            list_del((list_t *)job);
         }
         ReleaseMutex(pool->job_list_mutex);
         /* do not check status, since we are not protected by mutex now */
@@ -78,7 +78,6 @@ static DWORD WINAPI thread_pool_internal_callback(void *arg)
             job->threadfunc(job->arg);
             worker->state = WK_IDLE;
             free(job);
-            list_free(jobnode);
         }
     }
 
@@ -95,8 +94,8 @@ thread_pool_t *thread_pool_create(size_t size)
     memset(pool, 0, sizeof(thread_pool_t));
     pool->size = size;
     pool->state = TP_RUNNING;
-    pool->woker_list = NULL;
-    pool->job_list = NULL;
+    LIST_HEAD_INIT(&pool->worker_list);
+    LIST_HEAD_INIT(&pool->job_list);
     pool->job_list_mutex = CreateMutexA(NULL, FALSE, NULL);
     pool->job_added_event = CreateEventA(NULL, FALSE, FALSE, NULL);
     rc = 0;
@@ -111,7 +110,7 @@ thread_pool_t *thread_pool_create(size_t size)
             rc = GetLastError();
             break;
         }
-        pool->woker_list = list_append(pool->woker_list, worker);
+        list_add_tail((list_t *)worker, &pool->worker_list);
     }
     if (rc) {
         thread_pool_terminate(pool, 0, 5);
@@ -122,28 +121,25 @@ thread_pool_t *thread_pool_create(size_t size)
 
 void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
 {
-    list_t* temp;
-    job_t* job;
+    list_t *temp;
+    job_t *job;
     worker_t *worker;
     int tick, finished;
 
     pool->state = TP_TERMINATING;
     if (!wait) { /* clear job list */
         WaitForSingleObject(pool->job_list_mutex, INFINITE);
-        temp = pool->job_list;
-        while (temp) {
-            job = (job_t *)temp->data;
-            temp = temp->next;
+        while (!list_empty(&pool->job_list)) {
+            job = (job_t *)pool->job_list.next;
+            list_del((list_t *)job);
             free(job);
         }
-        list_free_all(pool->job_list);
-        pool->job_list = NULL;
         ReleaseMutex(pool->job_list_mutex);
     } else { /* wait for job list */
         while (1) {
             SetEvent(pool->job_added_event);
             WaitForSingleObject(pool->job_list_mutex, INFINITE);
-            if (list_length(pool->job_list) == 0) {
+            if (list_empty(&pool->job_list)) {
                 ReleaseMutex(pool->job_list_mutex);
                 break;
             } else {
@@ -162,9 +158,9 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         tick -= t;
         finished = 1;
         SetEvent(pool->job_added_event);
-        temp = pool->woker_list;
-        while (temp) {
-            worker = (worker_t *)temp->data;
+        temp = pool->worker_list.next;
+        while (temp != &pool->worker_list) {
+            worker = (worker_t *)temp;
             temp = temp->next;
             if (worker->state != WK_TERMINATED) {
                 finished = 0;
@@ -182,9 +178,9 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         }
     }
     /* kill hanging threads */
-    temp = pool->woker_list;
-    while (temp) {
-        worker = (worker_t *)temp->data;
+    temp = pool->worker_list.next;
+    while (temp != &pool->worker_list) {
+        worker = (worker_t *)temp;
         temp = temp->next;
         if (worker->state != WK_TERMINATED) {
             if (worker->handle != NULL) {
@@ -201,10 +197,9 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
                 worker->handle = NULL;
             }
         }
+        list_del((list_t *)worker);
         free(worker);
     }
-    list_free_all(pool->woker_list);
-    pool->woker_list = NULL;
     /* free thread pool */
     CloseHandle(pool->job_list_mutex);
     CloseHandle(pool->job_added_event);
@@ -222,7 +217,7 @@ int thread_pool_add_job(thread_pool_t *pool, thread_func_t func, void *arg)
     job->threadfunc = func;
     job->arg = arg;
     WaitForSingleObject(pool->job_list_mutex, INFINITE);
-    pool->job_list = list_append(pool->job_list, job);
+    list_add_tail((list_t *)job, &pool->job_list);
     ReleaseMutex(pool->job_list_mutex);
     SetEvent(pool->job_added_event); /* not necessary between mutex lock */
     return 0;

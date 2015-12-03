@@ -52,9 +52,9 @@ struct _thread_pool_t {
 
 static void *thread_pool_internal_callback(void *arg)
 {
-    worker_t *worker;
     thread_pool_t *pool;
     job_t *job;
+    worker_t *worker;
 
     worker = (worker_t *)arg;
     pool = (thread_pool_t *)worker->arg;
