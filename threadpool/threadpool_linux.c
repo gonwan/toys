@@ -58,25 +58,20 @@ static void *thread_pool_internal_callback(void *arg)
     pool = (thread_pool_t *)worker->arg;
 
     while (1) {
+        if (pool->state == TP_TERMINATED) {
+            worker->state = WK_TERMINATED;
+            break;
+        }
         /* if job list is not empty, get one */
+        job = NULL;
         pthread_mutex_lock(&pool->job_list_mutex);
         while (list_length(pool->job_list) == 0) {
             pthread_cond_wait(&pool->job_added_condition, &pool->job_list_mutex);
-            if (pool->state == TP_TERMINATED) {
-                worker->state = WK_TERMINATED;
-                break;
-            }
         }
-        job = NULL;
-        if (pool->state == TP_TERMINATED) {
-            pthread_mutex_unlock(&pool->job_list_mutex);
-            break;
-        } else {
-            jobnode = pool->job_list;
-            job = (job_t *)jobnode->data;
-            pool->job_list = list_remove_link(jobnode, jobnode);
-            pthread_mutex_unlock(&pool->job_list_mutex);
-        }
+        jobnode = pool->job_list;
+        job = (job_t *)jobnode->data;
+        pool->job_list = list_remove_link(jobnode, jobnode);
+        pthread_mutex_unlock(&pool->job_list_mutex);
         /* do not check status, since we are not protected by mutex now */
         if (job) {
             worker->state = WK_RUNNING;
