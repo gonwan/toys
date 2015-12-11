@@ -67,13 +67,13 @@ static void *thread_pool_internal_callback(void *arg)
         /* if job list is not empty, get one */
         job = NULL;
         pthread_mutex_lock(&pool->job_list_mutex);
-        while (list_empty(&pool->job_list)) {
-            pthread_cond_wait(&pool->job_added_condition, &pool->job_list_mutex);
+        pthread_cond_wait(&pool->job_added_condition, &pool->job_list_mutex);
+        if (!list_empty(&pool->job_list)) {
+            job = (job_t *)pool->job_list.next;
+            list_del((list_t *)job);
         }
-        job = (job_t *)pool->job_list.next;
-        list_del((list_t *)job);
         pthread_mutex_unlock(&pool->job_list_mutex);
-        /* do not check status, since we are not protected by mutex now */
+        /* do the job */
         if (job) {
             worker->state = WK_RUNNING;
             job->threadfunc(job->arg);
@@ -138,6 +138,7 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         pthread_mutex_unlock(&pool->job_list_mutex);
     } else { /* wait for job list */
         while (1) {
+            pthread_cond_broadcast(&pool->job_added_condition);
             pthread_mutex_lock(&pool->job_list_mutex);
             if (list_empty(&pool->job_list)) {
                 pthread_mutex_unlock(&pool->job_list_mutex);

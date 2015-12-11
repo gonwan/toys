@@ -44,7 +44,7 @@ struct _thread_pool_t {
     list_t job_list;
     /* mutex to lock the job list */
     HANDLE job_list_mutex;
-    /* event to set when there is any new job added into the job list */
+    /* event used when there is any new job added into the job list */
     HANDLE job_added_event;
 };
 
@@ -72,7 +72,7 @@ static DWORD WINAPI thread_pool_internal_callback(void *arg)
             list_del((list_t *)job);
         }
         ReleaseMutex(pool->job_list_mutex);
-        /* do not check status, since we are not protected by mutex now */
+        /* do the job */
         if (job) {
             worker->state = WK_RUNNING;
             job->threadfunc(job->arg);
