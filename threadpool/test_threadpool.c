@@ -4,39 +4,46 @@
  */
 #include "threadpool.h"
 #include <stdio.h>
-#define _CRT_RAND_S
 #include <stdlib.h>
 #ifdef _WIN32
 #include <windows.h>
 #endif
 #ifdef __linux__
-#include <unistd.h>
+#include <sys/time.h>
 #include <pthread.h>
+#include <unistd.h>
 #endif
 
 
 #ifdef _WIN32
 #define my_sleep(milsec)        Sleep(milsec)
 #define my_current_thread()     GetCurrentThreadId()
+unsigned int my_random() {
+    unsigned int v;
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    v = (ft.dwLowDateTime*12345) ^ (GetCurrentThreadId()*54321);
+    return v % RAND_MAX;
+}
 #endif
 #ifdef __linux__
 #define my_sleep(milsec)        usleep(milsec*1000)
 #define my_current_thread()     pthread_self()
+unsigned int my_random() {
+    unsigned int v;
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    v = (tv.tv_usec*12345) ^ (pthread_self()*54321);
+    return v % RAND_MAX;
+}
 #endif
 
 
 void sleep_random()
 {
     unsigned int r;
+    r = (unsigned int)((double)my_random() / RAND_MAX * 1000*20);
 
-#ifdef _WIN32
-    rand_s(&r);
-    r = (int)((double)r / UINT_MAX * 1000*20);
-#endif
-#ifdef __linux__
-    r = random();
-    r = (int)((double)r / RAND_MAX * 1000*20);
-#endif
     printf("[%lu] start sleep %u msec\n", my_current_thread(), r);
     my_sleep(r);
     printf("[%lu] end sleep %u msec\n", my_current_thread(), r);
