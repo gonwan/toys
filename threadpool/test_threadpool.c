@@ -22,7 +22,7 @@ unsigned int my_random() {
     unsigned int v;
     FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
-    v = (ft.dwLowDateTime*12345) ^ (GetCurrentThreadId()*54321);
+    v = (ft.dwLowDateTime*1103515245 + 12345) ^ (GetCurrentThreadId()*142857);
     return v % RAND_MAX;
 }
 #endif
@@ -33,7 +33,7 @@ unsigned int my_random() {
     unsigned int v;
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    v = (tv.tv_usec*12345) ^ (pthread_self()*54321);
+    v = (tv.tv_usec*1103515245 + 12345) ^ (pthread_self()*142857);
     return v % RAND_MAX;
 }
 #endif
