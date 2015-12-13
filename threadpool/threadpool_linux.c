@@ -139,7 +139,6 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         pthread_mutex_unlock(&pool->job_list_mutex);
     } else { /* wait for job list */
         while (1) {
-            /* no need to signal, since we check empty first in callback thread */
             pthread_mutex_lock(&pool->job_list_mutex);
             if (list_empty(&pool->job_list)) {
                 pthread_mutex_unlock(&pool->job_list_mutex);

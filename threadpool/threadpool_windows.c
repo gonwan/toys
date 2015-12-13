@@ -65,13 +65,15 @@ static DWORD WINAPI thread_pool_internal_callback(void *arg)
         }
         /* if job list is not empty, get one */
         job = NULL;
-        WaitForSingleObject(pool->job_added_event, INFINITE);
         WaitForSingleObject(pool->job_list_mutex, INFINITE);
-        if (!list_empty(&pool->job_list)) {
+        if (list_empty(&pool->job_list)) {
+            ReleaseMutex(pool->job_list_mutex);
+            WaitForSingleObject(pool->job_added_event, INFINITE);
+        } else {
             job = (job_t *)pool->job_list.next;
             list_del((list_t *)job);
+            ReleaseMutex(pool->job_list_mutex);
         }
-        ReleaseMutex(pool->job_list_mutex);
         /* do the job */
         if (job) {
             worker->state = WK_RUNNING;
@@ -137,7 +139,6 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
         ReleaseMutex(pool->job_list_mutex);
     } else { /* wait for job list */
         while (1) {
-            SetEvent(pool->job_added_event);
             WaitForSingleObject(pool->job_list_mutex, INFINITE);
             if (list_empty(&pool->job_list)) {
                 ReleaseMutex(pool->job_list_mutex);
