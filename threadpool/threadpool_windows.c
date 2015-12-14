@@ -163,8 +163,8 @@ void thread_pool_terminate(thread_pool_t *pool, int wait, int timeout)
             worker = (worker_t *)temp;
             temp = temp->next;
             if (worker->state != WK_TERMINATED) {
-                SetEvent(pool->job_added_event);
                 finished = 0;
+                SetEvent(pool->job_added_event);
             } else {
                 if (worker->handle != NULL) {
                     finished = 0;
