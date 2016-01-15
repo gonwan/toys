@@ -45,7 +45,7 @@ int main()
 
 void *worker_thread(void *param)
 {
-    int i, rc;
+    int i, rc, maxfd;
     fd_set rdset;
     struct timeval tv;
     char msg[MSGSIZE];
@@ -55,12 +55,16 @@ void *worker_thread(void *param)
         /* The tv value is updated every loop under linux, so we need to re-initialize it here. */
         tv.tv_sec = 1;
         tv.tv_usec = 0;
+        maxfd = -1;
         FD_ZERO(&rdset);
         for (i = 0; i < g_total_clients; i++) {
             FD_SET(g_client_socks[i], &rdset);
+            if (maxfd < g_client_socks[i]) {
+                maxfd = g_client_socks[i];
+            }
         }
-        /* The fd count for select() under linux */
-        rc = select(g_total_clients+1, &rdset, 0, 0, &tv);
+        /* The max fd plus 1 for select() under linux */
+        rc = select(maxfd+1, &rdset, 0, 0, &tv);
         if (rc == 0) { /* expired */
             continue;
         }
