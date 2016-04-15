@@ -1,11 +1,10 @@
 @echo off
-set CLASSPATH=.;..\lib\lucene-core-4.7.2.jar;..\lib\lucene-analyzers-common-4.7.2.jar;..\lib\lucene-queryparser-4.7.2.jar
+set CLASSPATH=.;target\classes;target\lib\lucene-core-4.7.2.jar;target\lib\lucene-analyzers-common-4.7.2.jar;target\lib\lucene-queryparser-4.7.2.jar
 
-set docs=..\docs
+set d=docs
 if "%~1"=="" goto do_index
-set docs="%~1"
+set d="%~1"
 
 :do_index
-cd bin
-java org.apache.lucene.demo.IndexFiles -docs %docs%
-cd ..
+java org.apache.lucene.demo.IndexFiles -docs %d%
+

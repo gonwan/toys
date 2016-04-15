@@ -1,13 +1,10 @@
 #!/bin/sh
+export CLASSPATH=.:target/classes:target/lib/lucene-core-4.7.2.jar:target/lib/lucene-analyzers-common-4.7.2.jar:target/lib/lucene-queryparser-4.7.2.jar
 
-export CLASSPATH=.:../lib/lucene-core-4.7.2.jar:../lib/lucene-analyzers-common-4.7.2.jar:../lib/lucene-queryparser-4.7.2.jar
-
-docs=../docs
+d=docs
 if [ -n "$1" ]; then
-    docs=$1
+    d=$1
 fi
 
-cd bin
-java org.apache.lucene.demo.IndexFiles -docs $docs
-cd ..
+java org.apache.lucene.demo.IndexFiles -docs $d
 
