@@ -312,6 +312,30 @@ class Client(object):
         yield from self._send_qpid_message(msg)
         yield from self._drain_qpid_messages('53014')
 
+    def test_55020(self):
+        def _build_msg(_msg, _id):
+            values_map = VariantMap([
+                ('UnderwriterID', Variant(VType.str, _id)),
+                ('Version', Variant(VType.i32, 20160301))
+            ])
+            _msg.set_values(values_map)
+        msg = Message()
+        msg.init('55020', '', '10000')
+        '''
+        _build_msg(msg, '1')  # tp
+        yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
+        '''
+        _build_msg(msg, '402880f034219aed0134219e10b00727')  # hy
+        yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
+        _build_msg(msg, 'ff808181359f49e601359f6dbb83031a')  # pa
+        yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
+        _build_msg(msg, '402880f034219aed0134219d4fbe0125')  # nb
+        yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
+
 
 @asyncio.coroutine
 def run(ip, port, username, password, funcid):
