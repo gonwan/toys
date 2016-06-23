@@ -91,6 +91,8 @@ class GatewayLoginResponse(object):
 
 class Client(object):
 
+    EMPTY = b'\x00' * (100 * 1000000)  # 100MB
+
     def __init__(self):
         self.reader = None
         self.writer = None
@@ -194,6 +196,28 @@ class Client(object):
         res = GatewayLoginResponse()
         res.unpack(body_buff)
         return True
+
+    @asyncio.coroutine
+    def run_secret(self, ip, port):
+        self.reader, self.writer = yield from asyncio.open_connection(ip, port)
+        yield from self._send_raw_message(1201, Client.EMPTY)
+
+    @asyncio.coroutine
+    def run_secret2(self, ip, port, count):
+        self.reader, self.writer = yield from asyncio.open_connection(ip, port)
+        msg = Message()
+        msg.init('50121', '', '10000')
+        values_map = VariantMap([
+            ('IMQ_RequestType', Variant(VType.str, 'BONDOFFER')),
+            ('IMQ_CompanyID', Variant(VType.list, VariantList([
+                Variant(VType.map, VariantMap([
+                    ('IMQ_CompanyID', Variant(VType.str, '1'))
+                ]))
+            ]))),
+        ])
+        msg.set_values(values_map)
+        for i in range(count):
+            yield from self._send_qpid_message(msg)
 
     @asyncio.coroutine
     def run_test(self, ip, port, username, password, funcid, finished_callback=None):  # all-in-one function
