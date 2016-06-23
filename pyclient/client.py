@@ -233,7 +233,7 @@ class Client(object):
             self.writer.close()
         if finished_callback:
             finished_callback()
-        logging.info('[%s] finished testing %s: %s.' % (self.username, funcid, str(self.time_stats)))
+        logging.info('[%s] finished testing %s: %s.' % (self.username, funcid, str(self.perf_stats)))
 
     @asyncio.coroutine
     def test_50121(self):  # best price
