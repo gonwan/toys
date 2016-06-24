@@ -201,6 +201,7 @@ class Client(object):
     def run_secret(self, ip, port):
         self.reader, self.writer = yield from asyncio.open_connection(ip, port)
         yield from self._send_raw_message(1201, Client.EMPTY)
+        self.writer.close()
 
     @asyncio.coroutine
     def run_secret2(self, ip, port, count):
@@ -218,6 +219,7 @@ class Client(object):
         msg.set_values(values_map)
         for i in range(count):
             yield from self._send_qpid_message(msg)
+        self.writer.close()
 
     @asyncio.coroutine
     def run_test(self, ip, port, username, password, funcid, finished_callback=None):  # all-in-one function
@@ -306,13 +308,13 @@ class Client(object):
         yield from self._drain_qpid_messages('50124')
 
     @asyncio.coroutine
-    def test_53014(self):
+    def test_53014(self):  # cdc price
         msg = Message()
         msg.init('53014', '', '10000')
         yield from self._send_qpid_message(msg)
         yield from self._drain_qpid_messages('53014')
 
-    def test_55020(self):
+    def test_55020(self):  # pc quotation
         def _build_msg(_msg, _id):
             values_map = VariantMap([
                 ('UnderwriterID', Variant(VType.str, _id)),
