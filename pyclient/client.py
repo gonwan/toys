@@ -277,12 +277,12 @@ class Client(object):
         msg.init('50121', '', '10000')
         _build_msg(msg, '1')
         yield from self._send_qpid_message(msg)
-        yield from self._drain_qpid_messages('50121')
         _build_msg(msg, '2')
         yield from self._send_qpid_message(msg)
-        yield from self._drain_qpid_messages('50121')
         _build_msg(msg, '3')
         yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('50121')
+        yield from self._drain_qpid_messages('50121')
         yield from self._drain_qpid_messages('50121')
 
     @asyncio.coroutine
@@ -323,19 +323,15 @@ class Client(object):
             _msg.set_values(values_map)
         msg = Message()
         msg.init('55020', '', '10000')
-        '''
-        _build_msg(msg, '1')  # tp
-        yield from self._send_qpid_message(msg)
-        yield from self._drain_qpid_messages('55020')
-        '''
+        # _build_msg(msg, '1')  # tp
         _build_msg(msg, '402880f034219aed0134219e10b00727')  # hy
         yield from self._send_qpid_message(msg)
-        yield from self._drain_qpid_messages('55020')
         _build_msg(msg, 'ff808181359f49e601359f6dbb83031a')  # pa
         yield from self._send_qpid_message(msg)
-        yield from self._drain_qpid_messages('55020')
         _build_msg(msg, '402880f034219aed0134219d4fbe0125')  # nb
         yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
+        yield from self._drain_qpid_messages('55020')
         yield from self._drain_qpid_messages('55020')
 
 
