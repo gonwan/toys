@@ -314,6 +314,7 @@ class Client(object):
         yield from self._send_qpid_message(msg)
         yield from self._drain_qpid_messages('53014')
 
+    @asyncio.coroutine
     def test_55020(self):  # pc quotation
         def _build_msg(_msg, _id):
             values_map = VariantMap([
