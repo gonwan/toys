@@ -32,7 +32,13 @@ def run(concurrency, ip, port, funcid, timeout):
         # username = 'optpst{0}'.format(i)
         password = '123456'
         coros.append(cli.run_test(ip, port, username, password, funcid, finished_callback))
-    yield from asyncio.wait(coros, timeout=timeout)
+    _, pending = yield from asyncio.wait(coros, timeout=timeout)
+    # explicitly close clients before closing event loop, to prevent exceptions
+    for cli in clis:
+        yield from cli.close()
+    yield from asyncio.wait(coros)
+    if len(pending) != 0:
+        print('\nsome clients unfinished in time(%d/%d). increase timeout value with -t switch and run again.' % (len(pending), concurrency))
     # statistics
     elapsed = time.time() - t0
     print('\nall %f seconds elapsed.' % elapsed)
@@ -65,7 +71,7 @@ def run(concurrency, ip, port, funcid, timeout):
         _min = 0
     print('read_bytes=%dkb read_rate=%dkb/s' % (_sum_bytes/1024, _sum_bytes/1024/elapsed))
     print('fails=%d [0,5)=%d [5,10)=%d [10,30)=%d [30,60)=%d [60,~~)=%d' % (_fails, _5s, _10s, _30s, _60s, _others))
-    print('min=%fs max=%fs avg=%fs, avg/req=%fs' % (_min, _max, _sum_time/concurrency, elapsed/concurrency))
+    print('min=%fs max=%fs avg=%fs avg/req=%fs' % (_min, _max, _sum_time/concurrency, elapsed/concurrency))
 
 
 def main():

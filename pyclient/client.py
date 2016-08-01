@@ -99,6 +99,12 @@ class Client(object):
         self.username = None
         self.perf_stats = [0, -1, -1, -1]  # [ read bytes, login time, gateway time, message time ]
 
+    @asyncio.coroutine
+    def close(self):
+        if self.writer:
+            self.writer.close()
+            self.writer = None
+
     @classmethod
     def get_test_names(cls):
         names = []
@@ -349,7 +355,7 @@ if __name__ == '__main__':
         logfile = datetime.datetime.now().strftime(prog + '_%Y%m%d_%H%M%S.log')
         logging.basicConfig(filename=logfile, format='%(asctime)-15s %(levelname)-8s %(message)s', level=logging.DEBUG)
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(run('172.16.8.85', 28899, 'binson.qian@sumscope.com', '123456', '50121'))
+        loop.run_until_complete(run('172.16.8.85', 28899, 'qbtest', '123456', '50121'))
         loop.close()
 
     test_client()
