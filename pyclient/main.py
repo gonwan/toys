@@ -23,28 +23,31 @@ def run(concurrency, ip, port, funcid, timeout):
 
     t0 = time.time()
     finished_callback = _init_counter(concurrency)
-    clis = []
-    coros = []
+    future_client_dict = dict()
     for i in range(1, concurrency+1, 1):
         cli = Client()
-        clis.append(cli)
         username = 'mt{0:03}'.format(i)
         # username = 'optpst{0}'.format(i)
         password = '123456'
-        coros.append(cli.run_test(ip, port, username, password, funcid, finished_callback))
-    _, pending = yield from asyncio.wait(coros, timeout=timeout)
+        fut = asyncio.async(cli.run_test(ip, port, username, password, funcid, finished_callback))
+        future_client_dict[fut] = cli
+    _, pending = yield from asyncio.wait(future_client_dict.keys(), timeout=timeout)
     # explicitly close clients before closing event loop, to prevent exceptions
-    for cli in clis:
+    for cli in future_client_dict.values():
         yield from cli.close()
-    yield from asyncio.wait(coros)
+    yield from asyncio.wait(future_client_dict.keys())
     if len(pending) != 0:
-        print('\nsome clients unfinished in time(%d/%d). increase timeout value with -t switch and run again.' % (len(pending), concurrency))
+        print('\nsome clients unfinished in time(%d/%d):' % (len(pending), concurrency))
+        pending_usernames = [future_client_dict[f].username for f in pending]
+        pending_usernames.sort()
+        print('\n'.join(pending_usernames))
+        print('\n!!! increase timeout value with -t switch and run again. !!!')
     # statistics
     elapsed = time.time() - t0
     print('\nall %f seconds elapsed.' % elapsed)
     _sum_bytes = 0
     _fails, _5s, _10s, _30s, _60s, _others, _min, _max, _sum_time = 0, 0, 0, 0, 0, 0, timeout, 0, 0
-    for cli in clis:
+    for cli in future_client_dict.values():
         stats = cli.perf_stats
         _sum_bytes += stats[0]
         if stats[-1] == -1:
@@ -67,11 +70,11 @@ def run(concurrency, ip, port, funcid, timeout):
                 _60s += 1
             else:
                 _others += 1
-    if _fails == concurrency:
-        _min = 0
     print('read_bytes=%dkb read_rate=%dkb/s' % (_sum_bytes/1024, _sum_bytes/1024/elapsed))
     print('fails=%d [0,5)=%d [5,10)=%d [10,30)=%d [30,60)=%d [60,~~)=%d' % (_fails, _5s, _10s, _30s, _60s, _others))
-    print('min=%fs max=%fs avg=%fs avg/req=%fs' % (_min, _max, _sum_time/concurrency, elapsed/concurrency))
+    _success = concurrency - _fails
+    if _success > 0:
+        print('min=%fs max=%fs avg=%fs avg/req=%fs' % (_min, _max, _sum_time/_success, elapsed/_success))
 
 
 def main():
