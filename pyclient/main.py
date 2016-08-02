@@ -26,8 +26,8 @@ def run(concurrency, ip, port, funcid, timeout):
     future_client_dict = dict()
     for i in range(1, concurrency+1, 1):
         cli = Client()
-        username = 'mt{0:03}'.format(i)
-        # username = 'optpst{0}'.format(i)
+        # username = 'mt{0:03}'.format(i)
+        username = 'optpst{0}'.format(i)
         password = '123456'
         fut = asyncio.async(cli.run_test(ip, port, username, password, funcid, finished_callback))
         future_client_dict[fut] = cli
@@ -37,7 +37,7 @@ def run(concurrency, ip, port, funcid, timeout):
         yield from cli.close()
     yield from asyncio.wait(future_client_dict.keys())
     if len(pending) != 0:
-        print('\nsome clients unfinished in time(%d/%d):' % (len(pending), concurrency))
+        print('\nsome clients not finished in time (%d/%d):' % (len(pending), concurrency))
         pending_usernames = [future_client_dict[f].username for f in pending]
         pending_usernames.sort()
         print('\n'.join(pending_usernames))
