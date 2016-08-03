@@ -96,12 +96,16 @@ class Client(object):
     def __init__(self):
         self.reader = None
         self.writer = None
+        self.timer = None
         self.username = None
         self.perf_stats = [0, -1, -1, -1]  # [ read bytes, login time, gateway time, message time ]
 
     @asyncio.coroutine
     def close(self):
-        if self.writer:
+        if self.timer is not None:
+            self.timer.cancel()
+            self.timer = None
+        if self.writer is not None:
             self.writer.close()
             self.writer = None
 
@@ -116,10 +120,11 @@ class Client(object):
         return names
 
     @asyncio.coroutine
-    def _send_raw_message(self, msgtype, msgbuff):
+    def _send_raw_message(self, msgtype, msgbuff, log=True):
         head = RequestHead(msgtype)
         packaged_buffer = Pack.pack(head.pack(), msgbuff)
-        logging.debug('[%s] sending raw message %s.' % (self.username, msgtype))
+        if log:
+            logging.debug('[%s] sending raw message %s.' % (self.username, msgtype))
         self.writer.write(packaged_buffer)
         yield from self.writer.drain()
 
@@ -138,15 +143,11 @@ class Client(object):
 
     @asyncio.coroutine
     def _send_qpid_message(self, msg):
-        head = RequestHead(Pack.QPID_MSGTYPE)
-        head_byte_buff = head.pack()
         body_array_buff = array.array('B', b'\0' * Message.MAX_BUFFER_SIZE)
         offset = msg.encode(body_array_buff)
         body_byte_buff = body_array_buff.tobytes()[:offset]
-        packaged_buffer = Pack.pack(head_byte_buff, body_byte_buff)
         logging.debug('[%s] sending qpid message %s.' % (self.username, msg.get_type()))
-        self.writer.write(packaged_buffer)
-        yield from self.writer.drain()
+        yield from self._send_raw_message(Pack.QPID_MSGTYPE, body_byte_buff, False)
 
     @asyncio.coroutine
     def _recv_qpid_message(self):
@@ -204,6 +205,12 @@ class Client(object):
         return True
 
     @asyncio.coroutine
+    def send_heartbeat(self):
+        while True:
+            yield from asyncio.sleep(60)
+            yield from self._send_raw_message(1208, b'')
+
+    @asyncio.coroutine
     def run_secret(self, ip, port):
         self.reader, self.writer = yield from asyncio.open_connection(ip, port)
         yield from self._send_raw_message(1201, Client.EMPTY)
@@ -241,7 +248,6 @@ class Client(object):
                 t0 = time.time()
                 res = yield from self.connect_login(ip, port, username, password)
                 self.writer.close()
-                self.writer = None
                 if res is None:
                     break
                 self.perf_stats[1] = time.time() - t0
@@ -252,6 +258,8 @@ class Client(object):
                 if not res:
                     break
                 self.perf_stats[2] = time.time() - t0
+                # heartbeat
+                self.timer = asyncio.async(self.send_heartbeat())
                 # test cases
                 t0 = time.time()
                 yield from test_func()
@@ -261,9 +269,7 @@ class Client(object):
             except EOFError as e:
                 logging.info('[%s] %s.' % (self.username, str(e)))
             break
-        if self.writer:
-            self.writer.close()
-        if finished_callback:
+        if finished_callback is not None:
             finished_callback()
         logging.info('[%s] finished testing %s: %s.' % (self.username, funcid, str(self.perf_stats)))
 
@@ -283,12 +289,12 @@ class Client(object):
         msg.init('50121', '', '10000')
         _build_msg(msg, '1')
         yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('50121')
         _build_msg(msg, '2')
         yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('50121')
         _build_msg(msg, '3')
         yield from self._send_qpid_message(msg)
-        yield from self._drain_qpid_messages('50121')
-        yield from self._drain_qpid_messages('50121')
         yield from self._drain_qpid_messages('50121')
 
     @asyncio.coroutine
@@ -333,22 +339,22 @@ class Client(object):
         # _build_msg(msg, '1')  # tp
         _build_msg(msg, '402880f034219aed0134219e10b00727')  # hy
         yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
         _build_msg(msg, 'ff808181359f49e601359f6dbb83031a')  # pa
         yield from self._send_qpid_message(msg)
+        yield from self._drain_qpid_messages('55020')
         _build_msg(msg, '402880f034219aed0134219d4fbe0125')  # nb
         yield from self._send_qpid_message(msg)
         yield from self._drain_qpid_messages('55020')
-        yield from self._drain_qpid_messages('55020')
-        yield from self._drain_qpid_messages('55020')
 
-
-@asyncio.coroutine
-def run(ip, port, username, password, funcid):
-    cli = Client()
-    yield from cli.run_test(ip, port, username, password, funcid)
 
 
 if __name__ == '__main__':
+
+    @asyncio.coroutine
+    def run(ip, port, username, password, funcid):
+        cli = Client()
+        yield from cli.run_test(ip, port, username, password, funcid)
 
     def test_client():
         prog = os.path.basename(os.getcwd())
