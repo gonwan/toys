@@ -78,9 +78,10 @@ def run(concurrency, ip, port, funcid, timeout):
 
 
 def main():
+    function_ids = Client.get_function_ids()
     desc = 'Performance test for QB:'
     desc += '\n  # {0} -c 100 -h 172.16.8.85 -p 28899 -f 50121'.format(os.path.basename(sys.argv[0]))
-    desc += '\n\nAvailable functions include: {0}.'.format(str(Client.get_test_names()))
+    desc += '\n\nAvailable functions include: {0}.'.format(str(function_ids))
     parser = argparse.ArgumentParser(description=desc, add_help=False, formatter_class=argparse.RawTextHelpFormatter)
     group = parser.add_argument_group("Options")
     group.add_argument('-c', dest='concurrency', required=True, type=int, help='concurrency level')
@@ -92,6 +93,10 @@ def main():
         parser.print_help()
         exit(0)
     args = vars(parser.parse_args())
+    function = args['function']
+    if not (function in function_ids):
+        print('ERROR: cannot find function id=%s.' % function)
+        exit(-1)
     timeout = args['timeout']
     if timeout is None:
         timeout = args['concurrency'] * 0.5
@@ -107,7 +112,7 @@ def main():
     else:
         loop = asyncio.SelectorEventLoop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(run(args['concurrency'], args['ip'], args['port'], args['function'], timeout))
+    loop.run_until_complete(run(args['concurrency'], args['ip'], args['port'], function, timeout))
     loop.close()
 
 main()

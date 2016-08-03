@@ -110,14 +110,14 @@ class Client(object):
             self.writer = None
 
     @classmethod
-    def get_test_names(cls):
-        names = []
+    def get_function_ids(cls):
+        ids = []
         for k, v in cls.__dict__.items():
             f = k.find('test_')
             if isinstance(v, types.FunctionType) and f == 0:
-                names.append(k[5:])
-        names.sort()
-        return names
+                ids.append(k[5:])
+        ids.sort()
+        return ids
 
     @asyncio.coroutine
     def _send_raw_message(self, msgtype, msgbuff, log=True):
