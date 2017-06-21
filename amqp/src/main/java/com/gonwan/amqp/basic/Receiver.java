@@ -3,6 +3,7 @@ package com.gonwan.amqp.basic;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Timer;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,7 @@ public class Receiver {
     private static final Logger logger = LoggerFactory.getLogger(Receiver.class);
     private static final byte[] LINE_SEPARATOR = System.lineSeparator().getBytes();
 
+    private StatTask statTask;
     private Parameters params;
     private Channel channel;
     private String queue;
@@ -73,6 +75,8 @@ public class Receiver {
 
     public Receiver(Parameters params) throws IOException, TimeoutException {
         this.params = params;
+        this.statTask = new StatTask(false);
+        new Timer().schedule(this.statTask, 15000, 15000);
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(params.host);
         factory.setPort(params.port);
@@ -100,7 +104,6 @@ public class Receiver {
         }
     }
 
-    //TODO: add stats...
     public void receive() throws IOException {
         /* hack here: add host and port to the consumer tag */
         NetworkConnection networkConnection = ((NetworkConnection) channel.getConnection());
@@ -121,6 +124,7 @@ public class Receiver {
                     fos.write(body);
                     fos.write(LINE_SEPARATOR);
                 }
+                statTask.addMessage(1);
                 channel.basicAck(deliveryTag, false);
             }
         });
@@ -135,7 +139,8 @@ public class Receiver {
         if (args.length == 0) {
             StringBuilder sb = new StringBuilder();
             jcommander.usage(sb);
-            System.err.println(sb.toString());
+            System.out.println(sb.toString());
+            System.exit(0);
         }
         /* parse */
         try {
@@ -143,6 +148,7 @@ public class Receiver {
             params.check();
         } catch (ParameterException e) {
             System.err.println("Error: " + e.getMessage());
+            System.exit(-1);
         }
         /* run */
         try {

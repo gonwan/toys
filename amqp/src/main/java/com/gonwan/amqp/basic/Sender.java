@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Timer;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ public class Sender {
 
     private static final Logger logger = LoggerFactory.getLogger(Sender.class);
 
+    private StatTask statTask;
     private Parameters params;
     private Channel channel;
     private String exchange;
@@ -88,6 +90,8 @@ public class Sender {
 
     public Sender(Parameters params) throws IOException, TimeoutException {
         this.params = params;
+        this.statTask = new StatTask(true);
+        new Timer().scheduleAtFixedRate(this.statTask, 15000, 15000);
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(params.host);
         factory.setPort(params.port);
@@ -105,7 +109,6 @@ public class Sender {
         }
     }
 
-    //TODO: add stats...
     public void send() throws IOException {
         if (StringUtils.isEmpty(params.file)) {
             send(params.message);
@@ -124,6 +127,7 @@ public class Sender {
                     String line;
                     while ((line = br.readLine()) != null) {
                         send(line.getBytes(StandardCharsets.ISO_8859_1));
+                        statTask.addMessage(1);
                         try {
                             Thread.sleep(params.interval);
                         } catch (InterruptedException e) {
@@ -152,7 +156,8 @@ public class Sender {
         if (args.length == 0) {
             StringBuilder sb = new StringBuilder();
             jcommander.usage(sb);
-            System.err.println(sb.toString());
+            System.out.println(sb.toString());
+            System.exit(0);
         }
         /* parse */
         try {
@@ -160,15 +165,12 @@ public class Sender {
             params.check();
         } catch (ParameterException e) {
             System.err.println("Error: " + e.getMessage());
+            System.exit(-1);
         }
         /* run */
         try {
             Sender sender = new Sender(params);
-            int i = 0;
-            while (true) {
-                sender.send("hahahahahaha" + (i++));
-                //Thread.sleep(1000);
-            }
+            sender.send();
         } catch (IOException | TimeoutException e) {
             logger.error("", e);
         }
