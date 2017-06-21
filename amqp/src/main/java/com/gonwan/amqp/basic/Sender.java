@@ -107,7 +107,8 @@ public class Sender {
     }
 
     public void send() throws IOException {
-        new Timer().scheduleAtFixedRate(this.statTask, 15000, 15000);
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(statTask, 15000, 15000);
         if (StringUtils.isEmpty(params.file)) {
             send(params.message);
         } else {
@@ -135,6 +136,8 @@ public class Sender {
                 }
             }
         }
+        timer.cancel();
+        channel.getConnection().close();
     }
 
     private void send(byte[] body) throws IOException {
@@ -170,8 +173,8 @@ public class Sender {
             Sender sender = new Sender(params);
             sender.send();
         } catch (IOException | TimeoutException e) {
-        	System.err.println(ExceptionUtils.getStackTrace(e));
-        	System.exit(-1);
+            System.err.println(ExceptionUtils.getStackTrace(e));
+            System.exit(-1);
         }
     }
 

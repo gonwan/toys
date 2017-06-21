@@ -104,7 +104,7 @@ public class Receiver {
     }
 
     public void receive() throws IOException {
-        new Timer().schedule(this.statTask, 15000, 15000);
+        new Timer().schedule(statTask, 15000, 15000);
         /* hack here: add host and port to the consumer tag */
         NetworkConnection networkConnection = ((NetworkConnection) channel.getConnection());
         String consumerTag = String.format("receiver@%s:%d",
@@ -155,8 +155,8 @@ public class Receiver {
             Receiver receiver = new Receiver(params);
             receiver.receive();
         } catch (IOException | TimeoutException e) {
-        	System.err.println(ExceptionUtils.getStackTrace(e));
-        	System.exit(-1);
+            System.err.println(ExceptionUtils.getStackTrace(e));
+            System.exit(-1);
         }
     }
 
