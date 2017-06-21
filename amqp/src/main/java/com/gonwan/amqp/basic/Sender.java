@@ -11,8 +11,7 @@ import java.util.Timer;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -22,8 +21,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 public class Sender {
-
-    private static final Logger logger = LoggerFactory.getLogger(Sender.class);
 
     private StatTask statTask;
     private Parameters params;
@@ -91,10 +88,10 @@ public class Sender {
     public Sender(Parameters params) throws IOException, TimeoutException {
         this.params = params;
         this.statTask = new StatTask(true);
-        new Timer().scheduleAtFixedRate(this.statTask, 15000, 15000);
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(params.host);
         factory.setPort(params.port);
+        factory.setConnectionTimeout(3000);
         Connection connection = factory.newConnection();
         channel = connection.createChannel();
         if (StringUtils.isEmpty(params.queue)) {
@@ -110,6 +107,7 @@ public class Sender {
     }
 
     public void send() throws IOException {
+        new Timer().scheduleAtFixedRate(this.statTask, 15000, 15000);
         if (StringUtils.isEmpty(params.file)) {
             send(params.message);
         } else {
@@ -172,8 +170,10 @@ public class Sender {
             Sender sender = new Sender(params);
             sender.send();
         } catch (IOException | TimeoutException e) {
-            logger.error("", e);
+        	System.err.println(ExceptionUtils.getStackTrace(e));
+        	System.exit(-1);
         }
     }
 
 }
+

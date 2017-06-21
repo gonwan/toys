@@ -7,8 +7,7 @@ import java.util.Timer;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -23,7 +22,6 @@ import com.rabbitmq.client.impl.NetworkConnection;
 
 public class Receiver {
 
-    private static final Logger logger = LoggerFactory.getLogger(Receiver.class);
     private static final byte[] LINE_SEPARATOR = System.lineSeparator().getBytes();
 
     private StatTask statTask;
@@ -76,16 +74,17 @@ public class Receiver {
     public Receiver(Parameters params) throws IOException, TimeoutException {
         this.params = params;
         this.statTask = new StatTask(false);
-        new Timer().schedule(this.statTask, 15000, 15000);
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(params.host);
         factory.setPort(params.port);
+        factory.setConnectionTimeout(3000);
         Connection connection = factory.newConnection();
         channel = connection.createChannel();
         /* declare a named queue */
         boolean exclusive = true;
         if (StringUtils.isEmpty(params.queue)) {
-            queue = params.exchange + ".receiver";
+            /* add possibility to specify a different queue name */
+            queue = params.exchange + ".receiver" + (StringUtils.isEmpty(params.routingKey) ? "" : "_" + params.routingKey);
         } else {
             queue = params.queue;
             exclusive = false;
@@ -105,6 +104,7 @@ public class Receiver {
     }
 
     public void receive() throws IOException {
+        new Timer().schedule(this.statTask, 15000, 15000);
         /* hack here: add host and port to the consumer tag */
         NetworkConnection networkConnection = ((NetworkConnection) channel.getConnection());
         String consumerTag = String.format("receiver@%s:%d",
@@ -155,8 +155,10 @@ public class Receiver {
             Receiver receiver = new Receiver(params);
             receiver.receive();
         } catch (IOException | TimeoutException e) {
-            logger.error("", e);
+        	System.err.println(ExceptionUtils.getStackTrace(e));
+        	System.exit(-1);
         }
     }
 
 }
+
