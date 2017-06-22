@@ -111,6 +111,7 @@ public class Sender {
         timer.scheduleAtFixedRate(statTask, 15000, 15000);
         if (StringUtils.isEmpty(params.file)) {
             send(params.message);
+            statTask.addMessages(1);
         } else {
             File f = new File(params.file);
             if (!params.batch) {
@@ -119,6 +120,7 @@ public class Sender {
                 }
                 byte[] body = Files.readAllBytes(f.toPath());
                 send(body);
+                statTask.addMessages(1);
             } else {
                 /* iso-8859-1 is good for bytes */
                 InputStreamReader isr = new InputStreamReader(new FileInputStream(f), StandardCharsets.ISO_8859_1);
