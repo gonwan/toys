@@ -49,7 +49,7 @@ public class Sender {
         private String type = "fanout";
 
         /* direct: empty or same as queue name??, fanout: no use, topic: routing key. */
-        @Parameter(order = 6, names = { "-r", "--routing-key " }, description = "routing key")
+        @Parameter(order = 6, names = { "-r", "--routing-key" }, description = "routing key")
         private String routingKey = "";
 
         /* -m and -f are exclusive */
@@ -126,7 +126,7 @@ public class Sender {
                     String line;
                     while ((line = br.readLine()) != null) {
                         send(line.getBytes(StandardCharsets.ISO_8859_1));
-                        statTask.addMessage(1);
+                        statTask.addMessages(1);
                         try {
                             Thread.sleep(params.interval);
                         } catch (InterruptedException e) {
@@ -136,6 +136,7 @@ public class Sender {
                 }
             }
         }
+        statTask.run(); /* show overall statistics */
         timer.cancel();
         channel.getConnection().close();
     }

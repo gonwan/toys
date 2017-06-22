@@ -50,7 +50,7 @@ public class Receiver {
         private String type = "fanout";
 
         /* direct: empty or same as queue name??, fanout: no use, topic: routing key. */
-        @Parameter(order = 6, names = { "-r", "--routing-key "}, description = "routing key")
+        @Parameter(order = 6, names = { "-r", "--routing-key"}, description = "routing key")
         private String routingKey = "";
 
         @Parameter(order = 7, names = { "-f", "--file" }, description = "file to write received messages")
@@ -124,7 +124,7 @@ public class Receiver {
                     fos.write(body);
                     fos.write(LINE_SEPARATOR);
                 }
-                statTask.addMessage(1);
+                statTask.addMessages(1);
                 channel.basicAck(deliveryTag, false);
             }
         });

@@ -15,8 +15,8 @@ public class StatTask extends TimerTask {
 		this.sender = sender;
 	}
 	
-	public void addMessage(int i) {
-		messages += i;
+	public void addMessages(int c) {
+		messages += c;
 	}
 
 	@Override
