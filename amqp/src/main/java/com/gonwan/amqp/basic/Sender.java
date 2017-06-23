@@ -20,7 +20,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-public class Sender {
+public class Sender implements AutoCloseable {
 
     private StatTask statTask;
     private Parameters params;
@@ -140,7 +140,17 @@ public class Sender {
         }
         statTask.run(); /* show overall statistics */
         timer.cancel();
-        channel.getConnection().close();
+    }
+
+    @Override
+    public void close() {
+        if (channel != null) {
+            try {
+                channel.getConnection().close();
+            } catch (IOException e) {
+                /* ignore */
+            }
+        }
     }
 
     private void send(byte[] body) throws IOException {
@@ -172,8 +182,7 @@ public class Sender {
             System.exit(-1);
         }
         /* run */
-        try {
-            Sender sender = new Sender(params);
+        try (Sender sender = new Sender(params)) {
             sender.send();
         } catch (IOException | TimeoutException e) {
             System.err.println(ExceptionUtils.getStackTrace(e));

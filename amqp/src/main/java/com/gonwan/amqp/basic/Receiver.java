@@ -20,7 +20,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.impl.NetworkConnection;
 
-public class Receiver {
+public class Receiver implements AutoCloseable {
 
     private static final byte[] LINE_SEPARATOR = System.lineSeparator().getBytes();
 
@@ -130,6 +130,17 @@ public class Receiver {
         });
     }
 
+    @Override
+    public void close() {
+        if (channel != null) {
+            try {
+                channel.getConnection().close();
+            } catch (IOException e) {
+                /* ignore */
+            }
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("=== Message receiver for RabbitMQ ===");
         Receiver.Parameters params = new Receiver.Parameters();
@@ -151,8 +162,7 @@ public class Receiver {
             System.exit(-1);
         }
         /* run */
-        try {
-            Receiver receiver = new Receiver(params);
+        try (Receiver receiver = new Receiver(params)) {
             receiver.receive();
         } catch (IOException | TimeoutException e) {
             System.err.println(ExceptionUtils.getStackTrace(e));

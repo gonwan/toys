@@ -1,28 +1,28 @@
 package com.gonwan.amqp.basic;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.TimerTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class StatTask extends TimerTask {
 
-	private static final Logger logger = LoggerFactory.getLogger(StatTask.class);
-	private boolean sender;
-	private volatile int messages;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    private boolean sender;
+    private volatile int messages;
 
-	public StatTask(boolean sender) {
-		this.sender = sender;
-	}
-	
-	public void addMessages(int c) {
-		messages += c;
-	}
+    public StatTask(boolean sender) {
+        this.sender = sender;
+    }
 
-	@Override
-	public void run() {
-		logger.info("{} messages {}.", messages, sender ? "sent" : "received");
-	}
+    public void addMessages(int c) {
+        messages += c;
+    }
+
+    @Override
+    public void run() {
+        System.out.println(String.format("[%s] %d message %s.",
+                formatter.format(LocalDateTime.now()), messages, sender ? "sent" : "received"));
+    }
 
 }
 
