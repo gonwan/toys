@@ -20,12 +20,12 @@ add_executable(server ${server_source_files})
 
 if (WIN32)
   target_link_libraries(client
-	debug "${debug_link_directories}\\libzmq.lib"
-	optimized "${optimized_link_directories}\\libzmq.lib"
+    debug "${debug_link_directories}\\libzmq.lib"
+    optimized "${optimized_link_directories}\\libzmq.lib"
   )
   target_link_libraries(server
-  	debug "${debug_link_directories}\\libzmq.lib"
-	optimized "${optimized_link_directories}\\libzmq.lib"
+    debug "${debug_link_directories}\\libzmq.lib"
+    optimized "${optimized_link_directories}\\libzmq.lib"
   )
 elseif (UNIX)
   target_link_libraries(client zmq)
@@ -33,7 +33,7 @@ elseif (UNIX)
 endif ()
 
 if (WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
 elseif (UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 endif ()
