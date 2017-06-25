@@ -13,24 +13,24 @@ int main(int argc, char *argv[]) {
     zmq_bind(socket, "tcp://*:5555");
     int c = 0;
     while (1) {
-    	char message[128] = { 0 };
-    	sprintf(message, "Hello %d", c);
-    	if (argc == 1) {
-        	zmq_send(socket, message, strlen(message), 0);
-        	printf("Sent message: %s\n", message);
-    	} else {
-    		int i = c % (argc-1);
-    		char *prefix = argv[i+1];
-    		zmq_send(socket, prefix, strlen(prefix), ZMQ_SNDMORE);
-        	zmq_send(socket, message, strlen(message), 0);
-        	printf("Sent message to [%s]: %s\n", prefix, message);
-    	}
+        char message[128] = { 0 };
+        sprintf(message, "Hello %d", c);
+        if (argc == 1) {
+            zmq_send(socket, message, strlen(message), 0);
+            printf("Sent message: %s\n", message);
+        } else {
+            int i = c % (argc - 1);
+            char *prefix = argv[i + 1];
+            zmq_send(socket, prefix, strlen(prefix), ZMQ_SNDMORE);
+            zmq_send(socket, message, strlen(message), 0);
+            printf("Sent message to [%s]: %s\n", prefix, message);
+        }
 #ifdef _WIN32
-    		Sleep(1000);
+        Sleep(1000);
 #else
-    		sleep(1);
+        sleep(1);
 #endif
-    	c++;
+        c++;
     }
     zmq_close(socket);
     zmq_ctx_destroy(context);
