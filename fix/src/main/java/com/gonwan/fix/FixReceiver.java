@@ -15,42 +15,45 @@ import quickfix.fix44.NewOrderSingle;
 public class FixReceiver extends MessageCracker implements Application {
 
     @Override
-    public void onMessage(NewOrderSingle order, SessionID sessionID) {
-        System.out.println("Receiver onMessage..  " + order);
+    public void onCreate(SessionID sessionId) {
+        System.out.println("Receiver onCreate: " + sessionId);
     }
 
     @Override
-    public void fromAdmin(Message arg0, SessionID arg1)
+    public void onLogon(SessionID sessionId) {
+        System.out.println("Receiver onLogon: " + sessionId);
+    }
+
+    @Override
+    public void onLogout(SessionID sessionId) {
+        System.out.println("Receiver onLogout: " + sessionId);
+    }
+
+    @Override
+    public void toAdmin(Message message, SessionID sessionId) {
+    }
+
+    @Override
+    public void fromAdmin(Message message, SessionID sessionId)
             throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon {
     }
 
     @Override
-    public void fromApp(Message arg0, SessionID arg1)
+    public void toApp(Message message, SessionID sessionId) throws DoNotSend {
+    }
+
+    @Override
+    public void fromApp(Message message, SessionID sessionId)
             throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
-        System.out.println("Receiver fromApp..  " + arg0);
-        crack(arg0, arg1); // calls onMessage(..,..)
+        System.out.println("Receiver fromApp: " + sessionId);
+        crack(message, sessionId);
     }
 
     @Override
-    public void onCreate(SessionID arg0) {
-        System.out.println("Receiver onCreate.. " + arg0);
-    }
-
-    @Override
-    public void onLogon(SessionID arg0) {
-        System.out.println("Receiver onLogon.." + arg0);
-    }
-
-    @Override
-    public void onLogout(SessionID arg0) {
-    }
-
-    @Override
-    public void toAdmin(Message arg0, SessionID arg1) {
-    }
-
-    @Override
-    public void toApp(Message arg0, SessionID arg1) throws DoNotSend {
+    public void onMessage(NewOrderSingle message, SessionID sessionID)
+            throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+        System.out.println("Receiver onMessage: " + message);
     }
 
 }
+

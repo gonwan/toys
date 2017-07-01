@@ -10,26 +10,22 @@ import quickfix.ScreenLogFactory;
 import quickfix.SessionSettings;
 import quickfix.SocketAcceptor;
 
-/* 
- * See: http://www.tuicool.com/articles/v2me6r
- */
 public class FixReceiverApp {
 
     public static void main(String[] args) throws ConfigError {
         SessionSettings settings = new SessionSettings("receiver.cfg");
-        Application myApp = new FixReceiver();
+        Application app = new FixReceiver();
         FileStoreFactory fileStoreFactory = new FileStoreFactory(settings);
         ScreenLogFactory screenLogFactory = new ScreenLogFactory(settings);
         DefaultMessageFactory msgFactory = new DefaultMessageFactory();
-        SocketAcceptor acceptor = new SocketAcceptor(myApp, fileStoreFactory, settings, screenLogFactory, msgFactory);
+        SocketAcceptor acceptor = new SocketAcceptor(app, fileStoreFactory, settings, screenLogFactory, msgFactory);
         acceptor.start();
-        Scanner reader = new Scanner(System.in);
-        System.out.println("press <enter> to quit");
-
-        // get user input for a
-        reader.nextLine();
-
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Press <enter> to quit");
+        scanner.nextLine();
+        scanner.close();
         acceptor.stop();
     }
 
 }
+

@@ -13,34 +13,35 @@ import quickfix.UnsupportedMessageType;
 public class FixSender implements Application {
 
     @Override
-    public void fromAdmin(Message arg0, SessionID arg1)
+    public void onCreate(SessionID sessionId) {
+    }
+
+    @Override
+    public void onLogon(SessionID sessionId) {
+    }
+
+    @Override
+    public void onLogout(SessionID sessionId) {
+    }
+
+    @Override
+    public void toAdmin(Message message, SessionID sessionId) {
+    }
+
+    @Override
+    public void fromAdmin(Message message, SessionID sessionId)
             throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon {
     }
 
     @Override
-    public void fromApp(Message arg0, SessionID arg1)
+    public void toApp(Message message, SessionID sessionId) throws DoNotSend {
+        System.out.println("Sender toApp: " + message);
+    }
+
+    @Override
+    public void fromApp(Message message, SessionID sessionId)
             throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
     }
 
-    @Override
-    public void onCreate(SessionID arg0) {
-    }
-
-    @Override
-    public void onLogon(SessionID arg0) {
-    }
-
-    @Override
-    public void onLogout(SessionID arg0) {
-    }
-
-    @Override
-    public void toAdmin(Message arg0, SessionID arg1) {
-    }
-
-    @Override
-    public void toApp(Message msg, SessionID sessionId) throws DoNotSend {
-        System.out.println("Sender toApp: " + msg.toString());
-    }
-
 }
+
