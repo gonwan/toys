@@ -10,14 +10,14 @@
   <fileSets>
     <fileSet>
       <directory>${project.basedir}/src/main/resources</directory>
-      <outputDirectory>/conf</outputDirectory>
+      <outputDirectory>conf</outputDirectory>
       <includes>
         <include>logback.xml</include>
       </includes>
     </fileSet>
     <fileSet>
       <directory>${project.basedir}/src/main/resources</directory>
-      <outputDirectory>/bin</outputDirectory>
+      <outputDirectory>bin</outputDirectory>
       <includes>
         <include>*.sh</include>
       </includes>
@@ -25,7 +25,7 @@
     </fileSet>
     <fileSet>
       <directory>${project.basedir}/src/main/resources</directory>
-      <outputDirectory>/bin</outputDirectory>
+      <outputDirectory>bin</outputDirectory>
       <includes>
         <include>*.bat</include>
       </includes>

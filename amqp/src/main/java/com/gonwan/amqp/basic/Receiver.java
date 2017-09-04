@@ -164,6 +164,13 @@ public class Receiver implements AutoCloseable {
         /* run */
         try (Receiver receiver = new Receiver(params)) {
             receiver.receive();
+            /* do not close receiver */
+            while (true) {
+                try {
+                    Thread.sleep(60 * 1000);
+                } catch (InterruptedException e) {
+                }
+            }
         } catch (IOException | TimeoutException e) {
             System.err.println(ExceptionUtils.getStackTrace(e));
             System.exit(-1);
