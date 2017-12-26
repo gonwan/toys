@@ -19,13 +19,13 @@ public class TUser {
 
     @Id
     @Column(name = "id", nullable = false)
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     /* mysql / table */
     //@GeneratedValue(strategy = GenerationType.TABLE, generator = "tableGenerator")
     //@TableGenerator(name = "tableGenerator", allocationSize = 100, table = "t_generator", pkColumnName = "gen_name", valueColumnName = "gen_value", pkColumnValue = "SEQ_USER")
     /* mariadb / sequence  */
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator", allocationSize = 100, sequenceName = "s_user")
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    //@SequenceGenerator(name = "sequenceGenerator", allocationSize = 100, sequenceName = "s_user")
     public int getId() {
         return id;
     }
