@@ -15,28 +15,28 @@ import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
  */
 class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
-	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		return bean;
-	}
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
 
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof DataSource) {
-			DataSource dataSourceBean = (DataSource) bean;
-			return ProxyDataSourceBuilder.create(dataSourceBean).logQueryBySlf4j(SLF4JLogLevel.INFO).build();
-		}
-		return bean;
-	}
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof DataSource) {
+            DataSource dataSourceBean = (DataSource) bean;
+            return ProxyDataSourceBuilder.create(dataSourceBean).logQueryBySlf4j(SLF4JLogLevel.INFO).build();
+        }
+        return bean;
+    }
 
 }
 
 @SpringBootApplication
 public class JpaBatchApplication {
 
-	//@Bean
-	public BeanPostProcessor datasourceProxyBeanPostProcessor() {
-		return new DatasourceProxyBeanPostProcessor();
-	}
+    //@Bean
+    public BeanPostProcessor datasourceProxyBeanPostProcessor() {
+        return new DatasourceProxyBeanPostProcessor();
+    }
 
 }
