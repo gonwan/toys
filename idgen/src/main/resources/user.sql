@@ -27,4 +27,4 @@ INSERT INTO `t_generator` (`gen_name`, `gen_value`) VALUES ('SEQ_USER', 1);
 
 # mariadb / sequence
 
-CREATE SEQUENCE s_user START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE s_user START WITH 1 INCREMENT BY 100;

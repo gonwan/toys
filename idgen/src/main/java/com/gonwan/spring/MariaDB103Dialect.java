@@ -13,6 +13,11 @@ public class MariaDB103Dialect extends MySQL5Dialect {
     }
 
     @Override
+    public boolean supportsPooledSequences() {
+        return true;
+    }
+
+    @Override
     public String getSequenceNextValString(String sequenceName) {
         return "select " + getSelectSequenceNextValString(sequenceName);
     }
