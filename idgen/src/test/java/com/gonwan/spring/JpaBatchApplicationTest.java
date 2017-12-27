@@ -55,7 +55,7 @@ public class JpaBatchApplicationTest {
         sw.start();
         for (List<TUser> users : usersList) {
             executorService.submit(() -> {
-                boolean batch = false;
+                boolean batch = true;
                 if (batch) {
                     repository.save(users);
                 } else {
