@@ -3,7 +3,7 @@ package com.gonwan.spring.generated;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "t_user", schema = "binson_test", catalog = "")
+@Table(name = "t_user", schema = "test", catalog = "")
 public class TUser {
     private int id;
     private String field1;
