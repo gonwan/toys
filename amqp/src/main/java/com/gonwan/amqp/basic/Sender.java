@@ -138,6 +138,7 @@ public class Sender implements AutoCloseable {
             }
         }
         statTask.run(); /* show overall statistics */
+        svc.shutdown(); /* return from thread pool */
     }
 
     @Override
