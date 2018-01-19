@@ -79,24 +79,24 @@ Usage: receiver [options]
 
 - Queue (Direct)
 ```
-# ./receiver.sh -h 172.16.66.127 -q test.queue -v
-# ./sender.sh -h 172.16.66.127 -q test.queue -m "test queue message..."
+# ./receiver.sh -h 172.16.87.11 -q test.queue -v
+# ./sender.sh -h 172.16.87.11 -q test.queue -m "test queue message..."
 ```
 
 - Fanout
 ```
-# ./receiver.sh -h 172.16.66.127 -e test.fanout -t fanout -r key1 -v
-# ./receiver.sh -h 172.16.66.127 -e test.fanout -t fanout -r key2 -v
-# ./sender.sh -h 172.16.66.127 -e test.fanout -t fanout -m "test fanout message..."
+# ./receiver.sh -h 172.16.87.11 -e test.fanout -t fanout -r key1 -v
+# ./receiver.sh -h 172.16.87.11 -e test.fanout -t fanout -r key2 -v
+# ./sender.sh -h 172.16.87.11 -e test.fanout -t fanout -m "test fanout message..."
 ```
 
 - Topic
 ```
-# ./receiver.sh -h 172.16.66.127 -e test.topic -t topic -r key1.* -v
-# ./receiver.sh -h 172.16.66.127 -e test.topic -t topic -r *.key2 -v
-# ./sender.sh -h 172.16.66.127 -e test.topic -t topic -r abcd.efgh -m "test topic message..."
-# ./sender.sh -h 172.16.66.127 -e test.topic -t topic -r key1.efgh -m "test topic message..."
-# ./sender.sh -h 172.16.66.127 -e test.topic -t topic -r abcd.key2 -m "test topic message..."
-# ./sender.sh -h 172.16.66.127 -e test.topic -t topic -r key1.key2 -m "test topic message..."
+# ./receiver.sh -h 172.16.87.11 -e test.topic -t topic -r key1.* -v
+# ./receiver.sh -h 172.16.87.11 -e test.topic -t topic -r *.key2 -v
+# ./sender.sh -h 172.16.87.11 -e test.topic -t topic -r abcd.efgh -m "test topic message..."
+# ./sender.sh -h 172.16.87.11 -e test.topic -t topic -r key1.efgh -m "test topic message..."
+# ./sender.sh -h 172.16.87.11 -e test.topic -t topic -r abcd.key2 -m "test topic message..."
+# ./sender.sh -h 172.16.87.11 -e test.topic -t topic -r key1.key2 -m "test topic message..."
 ```
 

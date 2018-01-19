@@ -3,7 +3,9 @@ package com.gonwan.amqp.basic;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -96,15 +98,15 @@ public class Receiver implements AutoCloseable {
         channel.queueDeclare(queue, false, exclusive, false, null);
         /* declare the exchange and bindings if fanout or topic type used. */
         if (StringUtils.isEmpty(params.queue)) {
-            /* declare passive may be better for a receiver */
-            channel.exchangeDeclare(params.exchange, params.type, false, false, null);
+            /* do not declare an exchange for a receiver */
             /* NOTE: routing keys works for queues bound to a topic exchange, and ignored for ones bound to a fanout exchange. */
             channel.queueBind(queue, params.exchange, params.routingKey);
         }
     }
 
     public void receive() throws IOException {
-        new Timer().schedule(statTask, 15000, 15000);
+        ScheduledExecutorService svc = Executors.newSingleThreadScheduledExecutor();
+        svc.scheduleAtFixedRate(statTask, 15, 15, TimeUnit.SECONDS);
         /* hack here: add host and port to the consumer tag */
         NetworkConnection networkConnection = ((NetworkConnection) channel.getConnection());
         String consumerTag = String.format("receiver@%s:%d",

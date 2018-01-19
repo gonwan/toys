@@ -2,9 +2,8 @@ package com.gonwan.amqp.basic;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.TimerTask;
 
-public class StatTask extends TimerTask {
+public class StatTask implements Runnable {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
     private boolean sender;

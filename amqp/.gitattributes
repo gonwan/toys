@@ -7,4 +7,6 @@
 *.sln text eol=crlf
 *.png binary
 *.jpg binary
+*.sh eol=lf
+*.bat eol=crlf
 
