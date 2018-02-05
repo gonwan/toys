@@ -1,0 +1,12 @@
+* text=auto
+*.c text
+*.h text
+*.cpp text
+*.hpp text
+*.java text
+*.sln text eol=crlf
+*.png binary
+*.jpg binary
+*.sh eol=lf
+*.bat eol=crlf
+
