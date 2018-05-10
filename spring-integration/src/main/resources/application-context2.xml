@@ -21,21 +21,25 @@
     <bean id="qpidDestination" class="org.apache.qpid.client.AMQAnyDestination">
         <constructor-arg type="java.lang.String" value="${application.qpid-destination}" />
     </bean>
-    <int:channel id="qpidInputChannel">
+    <int:channel id="qpidOutputChannel" />
+    <int-jms:outbound-channel-adapter channel="qpidOutputChannel" connection-factory="qpidConnectionFactory" destination="qpidDestination" />
+
+    <!-- Rabbit -->
+    <rabbit:connection-factory id="rabbitConnectionFactory" host="${spring.rabbitmq.host}" port="${spring.rabbitmq.port}" />
+    <rabbit:queue id="rabbitInputQueue" name="${application.rabbitmq-queue}" auto-delete="true" durable="false" />  <!-- use exclusive if necessary -->
+    <rabbit:fanout-exchange id="rabbitInputExchange" name="${application.rabbitmq-exchange}" durable="false">
+        <rabbit:bindings>
+            <rabbit:binding queue="rabbitInputQueue" />
+        </rabbit:bindings>
+    </rabbit:fanout-exchange>
+    <int:channel id="rabbitInputChannel">
         <int:interceptors>
             <int:wire-tap channel="loggerChannel" />
         </int:interceptors>
     </int:channel>
-    <int-jms:message-driven-channel-adapter channel="qpidInputChannel" connection-factory="qpidConnectionFactory" destination="qpidDestination" />
-
-    <!-- Rabbit -->
-    <rabbit:connection-factory id="rabbitConnectionFactory" host="${spring.rabbitmq.host}" port="${spring.rabbitmq.port}" />
-    <rabbit:template id="rabbitTemplate" connection-factory="rabbitConnectionFactory" />
-    <rabbit:fanout-exchange id="rabbitOutputExchange" name="${application.rabbitmq-exchange}" durable="false" />
-    <int:channel id="rabbitOutputChannel" />
-    <int-amqp:outbound-channel-adapter channel="rabbitOutputChannel" amqp-template="rabbitTemplate" exchange-name="${application.rabbitmq-exchange}" />
+    <int-amqp:inbound-channel-adapter channel="rabbitInputChannel" queue-names="#{rabbitInputQueue.name}" />
 
     <!-- Bridge -->
-    <int:bridge input-channel="qpidInputChannel" output-channel="rabbitOutputChannel" />
+    <int:bridge input-channel="rabbitInputChannel" output-channel="qpidOutputChannel" />
 
 </beans>

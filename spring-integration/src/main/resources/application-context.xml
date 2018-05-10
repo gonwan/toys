@@ -33,7 +33,7 @@
     <rabbit:template id="rabbitTemplate" connection-factory="rabbitConnectionFactory" />
     <rabbit:fanout-exchange id="rabbitOutputExchange" name="${application.rabbitmq-exchange}" durable="false" />
     <int:channel id="rabbitOutputChannel" />
-    <int-amqp:outbound-channel-adapter channel="rabbitOutputChannel" amqp-template="rabbitTemplate" exchange-name="${application.rabbitmq-exchange}" />
+    <int-amqp:outbound-channel-adapter channel="rabbitOutputChannel" amqp-template="rabbitTemplate" exchange-name="#{rabbitOutputExchange.name}" />
 
     <!-- Bridge -->
     <int:bridge input-channel="qpidInputChannel" output-channel="rabbitOutputChannel" />

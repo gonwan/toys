@@ -145,9 +145,7 @@ public class JmsApplication {
     }
 
     public static void main(String[] args) {
-        ApplicationContext appCtx = SpringApplication.run(JmsApplication.class, args);
-        Config cfg = appCtx.getBean(Config.class);
-        System.out.println(cfg.getQpidConnectionUrlString());
+        SpringApplication.run(JmsApplication.class, args);
     }
 
 }
