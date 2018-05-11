@@ -1,6 +1,8 @@
 package com.gonwan.snippet.spring.sequence;
 
-import com.gonwan.snippet.spring.msgbus.Application;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -15,9 +17,6 @@ import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.handler.GenericHandler;
 import org.springframework.integration.handler.LoggingHandler;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TODO:
