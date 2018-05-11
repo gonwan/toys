@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
+import org.springframework.integration.config.EnableMessageHistory;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
@@ -17,14 +18,11 @@ import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.integration.endpoint.MethodInvokingMessageSource;
 import org.springframework.integration.handler.GenericHandler;
 import org.springframework.integration.handler.LoggingHandler;
+import org.springframework.integration.history.MessageHistory;
+import org.springframework.util.StringUtils;
 
-/**
- * TODO:
- * 1. reliable messaging
- * 2. retry advice
- * 3. message store
- */
 @SpringBootApplication
+@EnableMessageHistory
 public class SequenceApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(SequenceApplication.class);
@@ -60,6 +58,10 @@ public class SequenceApplication {
                 .log(LoggingHandler.Level.INFO, m -> String.format("Got message: ts=%d seq=%04d payload=%04d",
                         m.getHeaders().getTimestamp(), m.getHeaders().get(IntegrationMessageHeaderAccessor.SEQUENCE_NUMBER), m.getPayload()
                 ))
+                .log(LoggingHandler.Level.DEBUG, m-> {
+                    MessageHistory history = (MessageHistory) m.getHeaders().get(MessageHistory.HEADER_NAME);
+                    return StringUtils.arrayToCommaDelimitedString(history.toArray());
+                })
                 .get();
     }
 
