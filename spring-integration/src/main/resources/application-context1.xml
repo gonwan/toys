@@ -27,7 +27,8 @@
             <int:wire-tap channel="loggerChannel" />
         </int:interceptors>
     </int:channel>
-    <int-jms:message-driven-channel-adapter channel="qpidInputChannel" connection-factory="qpidConnectionFactory" destination="qpidDestination" message-converter="qpidMessageConverter" />
+    <int-jms:message-driven-channel-adapter channel="qpidInputChannel" error-channel="errorChannel"
+                                            connection-factory="qpidConnectionFactory" destination="qpidDestination" message-converter="qpidMessageConverter" />
 
     <!-- Rabbit -->
     <rabbit:connection-factory id="rabbitConnectionFactory" host="${spring.rabbitmq.host}" port="${spring.rabbitmq.port}" />

@@ -37,7 +37,7 @@
             <int:wire-tap channel="loggerChannel" />
         </int:interceptors>
     </int:channel>
-    <int-amqp:inbound-channel-adapter channel="rabbitInputChannel" queue-names="#{rabbitInputQueue.name}" />
+    <int-amqp:inbound-channel-adapter channel="rabbitInputChannel" error-channel="errorChannel" queue-names="#{rabbitInputQueue.name}" />
 
     <!-- Bridge -->
     <int:bridge input-channel="rabbitInputChannel" output-channel="qpidOutputChannel" />
