@@ -7,12 +7,17 @@ import javax.sql.DataSource;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
+import org.springframework.batch.core.configuration.support.MapJobRegistry;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JpaPagingItemReader;
@@ -24,6 +29,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.ReflectionUtils;
@@ -45,6 +51,7 @@ class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) {
         if (bean instanceof DataSource) {
+            System.out.println(bean);
             ProxyFactory proxyFactory = new ProxyFactory(bean);
             proxyFactory.setProxyTargetClass(true);
             proxyFactory.addAdvice(new ProxyDataSourceInterceptor((DataSource) bean));
@@ -74,13 +81,14 @@ class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
 /*
  * TODO:
- * 1. use JdbcPagingItemReader to read..
- * 2. parallel execution???: https://docs.spring.io/spring-batch/4.0.x/reference/html/scalability.html#scalabilityParallelSteps
- * 3. retry?? continue???
+ * 1. parallel execution: https://docs.spring.io/spring-batch/4.0.x/reference/html/scalability.html#scalabilityParallelSteps
+ * 2. See SimpleBatchConfiguration & ModularBatchConfiguration.
  */
 @SpringBootApplication
 @EnableBatchProcessing
 public class Application {
+
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     @Bean
     @ConditionalOnProperty(prefix = "application", name = "datasource-proxy-enabled", havingValue = "true")
@@ -88,12 +96,27 @@ public class Application {
         return new DatasourceProxyBeanPostProcessor();
     }
 
-    /* Do not use @Autowired fields, the interceptor will fail. */
+    /* Required for JobRegistryBeanPostProcessor to work, not knowing why. */
+    @Bean
+    public JobRegistry jobRegistry() {
+        return new MapJobRegistry();
+    }
+
+    /* Required for JobOperator#stop() to not throw exception. */
+    @Bean
+    public BeanPostProcessor jobRegistryBeanPostProcessor(JobRegistry jobRegistry) {
+        JobRegistryBeanPostProcessor postProcessor = new JobRegistryBeanPostProcessor();
+        postProcessor.setJobRegistry(jobRegistry);
+        return postProcessor;
+    }
+
+    /* Do not use @Autowired fields, the interceptor will fail due to dependencies. */
     @Bean(destroyMethod = "")
     public JpaPagingItemReader<PBondListInfo> itemReader(EntityManagerFactory entityManagerFactory) {
         return new JpaPagingItemReaderBuilder<PBondListInfo>()
                 .name("bondReader")
                 .entityManagerFactory(entityManagerFactory)
+                //.saveState(false)
                 .queryString("select b from PBondListInfo b") /* HQL uses entity names */
                 .pageSize(2000)
                 .build();
@@ -127,13 +150,28 @@ public class Application {
 	@Bean
 	public Job job(JobBuilderFactory jobBuilderFactory, Step step1) {
 		return jobBuilderFactory.get("job1")
+		        /*
+		         * Use a new run id to force starting a new job instance.
+		         * So if a previous run failed, it will not continue when restarting.
+		         */
 				.incrementer(new RunIdIncrementer())
 				.start(step1)
 				.build();
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+        ApplicationContext context = SpringApplication.run(Application.class, args);
+//        JobLauncher jobLauncher = context.getBean(JobLauncher.class);
+//        JobExplorer jobExplorer = context.getBean(JobExplorer.class);
+//        Job job = context.getBean(Job.class);
+//        try {
+//            /* See: JobLauncherCommandLineRunner#execute() */
+//            JobParameters nextParameters = new JobParametersBuilder(
+//                    new JobParameters(), jobExplorer).getNextJobParameters(job).toJobParameters();
+//            jobLauncher.run(job, nextParameters);
+//        } catch (JobExecutionException e) {
+//            logger.error("Job execution failed", e);
+//        }
 	}
 
 }
