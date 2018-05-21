@@ -1,6 +1,7 @@
 package com.gonwan.snippet.spring;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -11,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionException;
+import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
@@ -24,6 +27,8 @@ import org.springframework.batch.core.configuration.support.MapJobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.launch.support.SimpleJobLauncher;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
@@ -37,6 +42,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.ReflectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,10 +91,9 @@ class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 }
 
 /*
- * TODO:
- * 1. parallel execution: https://docs.spring.io/spring-batch/4.0.x/reference/html/scalability.html#scalabilityParallelSteps
+ * XXX:
+ * 1. Parallel execution: https://docs.spring.io/spring-batch/4.0.x/reference/html/scalability.html#scalabilityParallelSteps
  * 2. See SimpleBatchConfiguration & ModularBatchConfiguration.
- * 3. Async job run.
  */
 @SpringBootApplication
 @EnableBatchProcessing
@@ -99,6 +105,25 @@ public class Application {
     @ConditionalOnProperty(prefix = "application", name = "datasource-proxy-enabled", havingValue = "true")
     public BeanPostProcessor datasourceProxyBeanPostProcessor() {
         return new DatasourceProxyBeanPostProcessor();
+    }
+
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setCorePoolSize(1);
+        taskExecutor.setMaxPoolSize(2);
+        taskExecutor.setQueueCapacity(100);
+        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        return taskExecutor;
+    }
+
+    @Bean
+    public JobLauncher jobLauncher(JobRepository jobRepository, TaskExecutor taskExecutor) {
+        SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.setTaskExecutor(taskExecutor);
+        return jobLauncher;
     }
 
     /* Required for JobRegistryBeanPostProcessor to work, not knowing why. */
@@ -160,6 +185,16 @@ public class Application {
 		         * So if a previous run failed, it will not continue when restarting.
 		         */
 				.incrementer(new RunIdIncrementer())
+                .listener(new JobExecutionListener() {
+                    @Override
+                    public void beforeJob(JobExecution jobExecution) {
+                        logger.info("Before job: " + jobExecution);
+                    }
+                    @Override
+                    public void afterJob(JobExecution jobExecution) {
+                        logger.info("After job: " + jobExecution);
+                    }
+                })
 				.start(step1)
 				.build();
 	}

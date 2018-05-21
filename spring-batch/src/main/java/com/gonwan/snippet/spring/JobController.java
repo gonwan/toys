@@ -76,6 +76,7 @@ public class JobController {
                 JobExecution jobExecution = jobExecutions.get(0);
                 if (jobExecution.getStatus() == BatchStatus.STOPPED) {
                     jobOperator.restart(jobExecution.getId());
+                    logger.info("Resumed job execution: " + jobExecution.getId());
                 }
             }
         }
@@ -84,7 +85,7 @@ public class JobController {
     /* HACK: force resume when the process exits abnormally */
     @GetMapping(value = "resume2", produces = "application/json")
     public void restart() throws JobExecutionException {
-        List<JobInstance> jobInstances = jobExplorer.getJobInstances("job1", 0, 1);
+        List<JobInstance> jobInstances = jobExplorer.getJobInstances(job.getName(), 0, 1);
         if (!jobInstances.isEmpty()) {
             List<JobExecution> jobExecutions = jobExplorer.getJobExecutions(jobInstances.get(0));
             if (!jobExecutions.isEmpty()) {
@@ -102,6 +103,7 @@ public class JobController {
                     }
                     jobRepository.update(jobExecution);
                     jobOperator.restart(jobExecution.getId());
+                    logger.info("Force resumed job execution: " + jobExecution.getId());
                 }
             }
         }
