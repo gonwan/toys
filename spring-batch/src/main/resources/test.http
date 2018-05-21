@@ -1,0 +1,11 @@
+### start
+GET http://localhost:8080/job/start
+
+### stop
+GET http://localhost:8080/job/stop
+
+### resume
+GET http://localhost:8080/job/resume
+
+### force resume
+GET http://localhost:8080/job/resume2
