@@ -1,2 +1,2 @@
-java -cp ..\lib\* com.gonwan.amqp.basic.Receiver %*
+java -cp .;..\lib\* com.gonwan.amqp.basic.Receiver %*
 

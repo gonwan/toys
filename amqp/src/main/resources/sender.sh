@@ -1,2 +1,3 @@
-java -cp ../lib/* com.gonwan.amqp.basic.Sender "$@"
+#!/bin/bash
+java -cp .:../lib/* com.gonwan.amqp.basic.Sender "$@"
 
