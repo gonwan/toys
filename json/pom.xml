@@ -9,10 +9,9 @@
         <relativePath/>
     </parent>
     <groupId>com.gonwan.snippet.json</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>json-snippet</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>json-snippet</name>
-    <description>Json Snippet for Spring Boot</description>
+    <name>Json Snippet</name>
 
     <properties>
         <java.version>1.8</java.version>
