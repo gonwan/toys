@@ -3,7 +3,7 @@ CREATE TABLE `t_user` (
   `username` varchar(50) DEFAULT NULL,
   `password` varchar(50) DEFAULT NULL,
   `version` bigint(20) DEFAULT NULL,
-  `create_time` datetime(3) NOT NULL,
-  `update_time` datetime(3) NOT NULL,
+  `create_time` datetime(6) NOT NULL,
+  `update_time` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
