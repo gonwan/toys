@@ -12,9 +12,9 @@ public class StdAnalyzer {
 
     private static String strCh = "中华人民共和国简称中国，是一个有13亿人口的国家。";
 
-    private static String strEn = "Dogs can not achieve a place, eyes an reach.";
+    private static String strEn = "Dogs can not achieve a place, eyes can reach.";
 
-    public static void stdAnayzer(String str) throws IOException {
+    public static void stdAnalyzer(String str) throws IOException {
         Analyzer analyzer = new StandardAnalyzer();
         StringReader reader = new StringReader(str);
         TokenStream tokenStream = analyzer.tokenStream(str, reader);
@@ -30,9 +30,9 @@ public class StdAnalyzer {
 
     public static void main(String[] args) throws IOException {
         System.out.println("StandardAnalyzer对中文分词：");
-        stdAnayzer(strCh);
+        stdAnalyzer(strCh);
         System.out.println("StandardAnalyzer对英文分词：");
-        stdAnayzer(strEn);
+        stdAnalyzer(strEn);
     }
 
 }

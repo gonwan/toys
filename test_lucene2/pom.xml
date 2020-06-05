@@ -18,9 +18,10 @@
             <version>6.6.6</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode</groupId>
+            <groupId>com.wltea</groupId>
             <artifactId>ik-analyzer</artifactId>
             <scope>system</scope>
+            <version>2012_u6</version>
             <systemPath>${project.basedir}/lib/IKAnalyzer2012_u6.jar</systemPath>
         </dependency>
     </dependencies>
