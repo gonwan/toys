@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Component
+//@Component
 public class JpaRunner implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(JpaRunner.class);

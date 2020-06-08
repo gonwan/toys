@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * Or the fractional seconds is truncated, since MariaDB does not honor sendFractionalSeconds=true.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
-@Component
+//@Component
 public class JpaRunner2 implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(JpaRunner2.class);
