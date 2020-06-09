@@ -1,5 +1,10 @@
 package com.gonwan.springjpatest;
 
+import com.querydsl.sql.MySQLTemplates;
+import com.querydsl.sql.SQLTemplates;
+import com.querydsl.sql.mysql.MySQLQueryFactory;
+import com.querydsl.sql.spring.SpringConnectionProvider;
+import com.querydsl.sql.spring.SpringExceptionTranslator;
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -15,8 +20,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.util.ReflectionUtils;
 
+import javax.inject.Provider;
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
+import java.sql.Connection;
 
 class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
@@ -68,6 +75,20 @@ public class SpringJpaTestApplication {
     @ConditionalOnProperty(prefix = "application", name = "datasource-proxy-enabled", havingValue = "true")
     public BeanPostProcessor datasourceProxyBeanPostProcessor() {
         return new DatasourceProxyBeanPostProcessor();
+    }
+
+    @Bean
+    public com.querydsl.sql.Configuration querydslConfiguration() {
+        SQLTemplates templates = MySQLTemplates.builder().build();
+        com.querydsl.sql.Configuration configuration = new com.querydsl.sql.Configuration(templates);
+        configuration.setExceptionTranslator(new SpringExceptionTranslator());
+        return configuration;
+    }
+
+    @Bean
+    public MySQLQueryFactory sqlQueryFactory(DataSource dataSource) {
+        Provider<Connection> provider = new SpringConnectionProvider(dataSource);
+        return new MySQLQueryFactory(querydslConfiguration(), provider);
     }
 
     public static void main(String[] args) {

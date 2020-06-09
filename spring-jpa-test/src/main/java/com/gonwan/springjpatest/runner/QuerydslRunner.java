@@ -5,7 +5,6 @@ import com.gonwan.springjpatest.model.STUser;
 import com.gonwan.springjpatest.model.TUser;
 import com.gonwan.springjpatest.model.TUserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.sql.SQLCloseListener;
 import com.querydsl.sql.mysql.MySQLQueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
 import javax.transaction.Transactional;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +27,6 @@ public class QuerydslRunner implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(QuerydslRunner.class);
 
-    @Autowired
-    private DataSource dataSource;
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -41,6 +35,9 @@ public class QuerydslRunner implements CommandLineRunner {
 
     @Autowired
     private QuerydslRunner querydslRunner;
+
+    @Autowired
+    private MySQLQueryFactory mySQLQueryFactory;
 
     @Transactional
     public void init() {
@@ -75,17 +72,9 @@ public class QuerydslRunner implements CommandLineRunner {
         queryFactory.update(qtUser).where(qtUser.username.eq("username_3")).set(qtUser.password, "password_333").execute();
     }
 
-    //@Transactional
+    @Transactional
     public void test2() {
         logger.info("--- running test2 ---");
-        MySQLQueryFactory mySQLQueryFactory = new MySQLQueryFactory(() -> {
-            try {
-                return dataSource.getConnection();
-            } catch (SQLException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        });
-        mySQLQueryFactory.getConfiguration().addListener(SQLCloseListener.DEFAULT);
         STUser stUser = STUser.tUser;
         /* populate */
         TUser tUser = new TUser();
