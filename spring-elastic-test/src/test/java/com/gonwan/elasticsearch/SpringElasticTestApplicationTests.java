@@ -1,6 +1,5 @@
 package com.gonwan.elasticsearch;
 
-
 import com.gonwan.elasticsearch.model.Article;
 import com.gonwan.elasticsearch.model.ArticleRepository;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -30,7 +29,10 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.util.StreamUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @SpringBootTest
