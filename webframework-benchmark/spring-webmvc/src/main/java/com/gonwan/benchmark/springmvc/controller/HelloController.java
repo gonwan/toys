@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -35,22 +36,21 @@ public final class HelloController {
     }
 
     @RequestMapping("/queries")
-    public World[] queries(@RequestParam String count) {
-        World[] worlds = new World[parseQueryCount(count)];
-        Arrays.setAll(worlds, i -> randomWorld());
-        return worlds;
+    public Iterable<World> queries(@RequestParam String count) {
+        Integer[] ids = new Integer[parseQueryCount(count)];
+        Arrays.setAll(ids, i -> random());
+        return worldRepository.findAllById(Arrays.asList(ids));
     }
 
     @RequestMapping("/updates")
-    public World[] updates(@RequestParam String count) {
-        World[] worlds = new World[parseQueryCount(count)];
-        Arrays.setAll(worlds, i -> {
-            World w = randomWorld();
+    public Iterable<World> updates(@RequestParam String count) {
+        Iterable<World> worlds = this.queries(count);
+        for (World w : worlds) {
             w.setRandomNumber(random());
-            return w;
-        });
-        worldRepository.saveAll(Arrays.asList(worlds));
-        return worlds;
+            w.setRandomText("哈哈哈");
+            w.setUpdateTime(new Timestamp(System.currentTimeMillis()));
+        }
+        return worldRepository.saveAll(worlds);
     }
 
     private World randomWorld() {

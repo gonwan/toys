@@ -7,8 +7,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -35,24 +37,24 @@ public class HelloController {
         return randomWorld();
     }
 
-//    @RequestMapping("/queries")
-//    public World[] queries(@RequestParam String count) {
-//        World[] worlds = new World[parseQueryCount(count)];
-//        Arrays.setAll(worlds, i -> randomWorld());
-//        return worlds;
-//    }
-//
-//    @RequestMapping("/updates")
-//    public World[] updates(@RequestParam String count) {
-//        World[] worlds = new World[parseQueryCount(count)];
-//        Arrays.setAll(worlds, i -> {
-//            World w = randomWorld();
-//            w.setRandomNumber(random());
-//            return w;
-//        });
-//        worldRepository.saveAll(Arrays.asList(worlds));
-//        return worlds;
-//    }
+    @RequestMapping("/queries")
+    public Flux<World> queries(@RequestParam String count) {
+        Integer[] ids = new Integer[parseQueryCount(count)];
+        Arrays.setAll(ids, i -> random());
+        return worldRepository.findAllById(Arrays.asList(ids));
+    }
+
+    @RequestMapping("/updates")
+    public Flux<World> updates(@RequestParam String count) {
+        Flux<World> worlds = this.queries(count)
+                .map(x -> {
+                    x.setRandomNumber(random());
+                    x.setRandomText("哈哈哈哈");
+                    x.setUpdateTime(LocalDateTime.now());
+                    return x;
+                });
+        return worldRepository.saveAll(worlds);
+    }
 
     private Mono<World> randomWorld() {
         return worldRepository.findById(random());
