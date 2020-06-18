@@ -57,6 +57,7 @@ public class HelloController {
     }
 
     private Mono<World> randomWorld() {
+        /* returns Mono.empty() if none found */
         return worldRepository.findById(random());
     }
 
