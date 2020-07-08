@@ -60,7 +60,7 @@ class SpringElasticTestApplicationTests {
         article.setContent("昨天，背景大学迎来4380名来自全国各地及数十个国家的本科新生。其中，农村学生共700余名，为近年最多...");
         articles.add(article);
         article = new Article();
-        article.setTitle("特朗普宣誓（Donald Trump）救人美国第45任总统");
+        article.setTitle("特朗普宣誓（Donald Trump）就任美国第45任总统");
         article.setContent("当地时间1月20日，唐纳德·特朗普在美国国会宣誓就职，正式成为美国第45任总统。");
         articles.add(article);
         return articles;
