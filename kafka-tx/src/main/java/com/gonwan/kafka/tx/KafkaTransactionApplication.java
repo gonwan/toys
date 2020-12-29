@@ -8,20 +8,21 @@ import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerConta
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.converter.JsonMessageConverter;
 import org.springframework.kafka.transaction.ChainedKafkaTransactionManager;
 import org.springframework.kafka.transaction.KafkaTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
-//import org.springframework.orm.jpa.JpaTransactionManager;
-//
-//import javax.persistence.EntityManagerFactory;
+
 import javax.persistence.EntityManagerFactory;
 import java.util.UUID;
 
+@EnableJpaAuditing
 @SpringBootApplication
 public class KafkaTransactionApplication {
 
@@ -45,6 +46,7 @@ public class KafkaTransactionApplication {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, consumerFactory);
         factory.getContainerProperties().setTransactionManager(chainedKafkaTransactionManager);
+        factory.setMessageConverter(new JsonMessageConverter()); /* json support */
         return factory;
     }
 
@@ -88,14 +90,6 @@ public class KafkaTransactionApplication {
     }
 
     public static void main(String[] args) {
-
-//        KafkaMessageListenerContainer container = new KafkaMessageListenerContainer(connectionFactory);
-//        container.setp
-//        MessageListenerAdapter adapter = new MessageListenerAdapter(listener);
-//        container.setMessageListener(adapter);
-//        container.setQueueNames(queue.getName());
-        //container.start();
-
         SpringApplication.run(KafkaTransactionApplication.class, args);
     }
 
