@@ -20,6 +20,8 @@ import java.util.Collections;
 @RestController
 public class KafkaController {
 
+    private long id = 0;
+
     @Autowired
     private Config config;
 
@@ -33,7 +35,7 @@ public class KafkaController {
     @GetMapping("/topic/send")
     public void topicSend(String message) {
         User user = new User();
-        user.setId(123456L);
+        user.setId(++id);
         user.setUsername("hahausername");
         user.setPassword("hahapassword");
         Message<User> msg = MessageBuilder

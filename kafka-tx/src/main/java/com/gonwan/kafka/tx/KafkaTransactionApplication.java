@@ -2,6 +2,8 @@ package com.gonwan.kafka.tx;
 
 import com.gonwan.kafka.tx.config.Config;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
@@ -15,6 +17,8 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.AfterRollbackProcessor;
+import org.springframework.kafka.listener.ConsumerRecordRecoverer;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultAfterRollbackProcessor;
 import org.springframework.kafka.support.converter.JsonMessageConverter;
@@ -31,6 +35,8 @@ import java.util.UUID;
 @SpringBootApplication
 public class KafkaTransactionApplication {
 
+    private static Logger logger = LoggerFactory.getLogger(KafkaTransactionApplication.class);
+
     @Bean
     public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
@@ -44,23 +50,28 @@ public class KafkaTransactionApplication {
     }
 
     @Bean
-    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaOperations<?, ?> kafkaOperations) {
-        return new DeadLetterPublishingRecoverer(kafkaOperations);
+    public AfterRollbackProcessor<?, ?> afterRollbackProcessor(KafkaOperations<?, ?> kafkaOperations) {
+        DeadLetterPublishingRecoverer deadLetterPublishingRecoverer = new DeadLetterPublishingRecoverer(kafkaOperations);
+        ConsumerRecordRecoverer recoverer = (r, e) -> {
+            logger.info("Sending dead letter message...");
+            deadLetterPublishingRecoverer.accept(r, e);
+        };
+        return new DefaultAfterRollbackProcessor<>(recoverer, new FixedBackOff(0L, 2), kafkaOperations, true);
     }
 
     @SuppressWarnings("unchecked")
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaTransactionListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<?, ?> consumerFactory,
-            DeadLetterPublishingRecoverer deadLetterPublishingRecoverer,
+            AfterRollbackProcessor<?, ?> afterRollbackProcessor,
             ChainedKafkaTransactionManager<?, ?> chainedKafkaTransactionManager) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, (ConsumerFactory<Object, Object>) consumerFactory);
         /* transaction id defaults '<transactionIdPrefix>.<group.id>.<topic>.<partition>' */
         factory.getContainerProperties().setTransactionManager(chainedKafkaTransactionManager); /* transaction support */
         factory.setMessageConverter(new JsonMessageConverter()); /* json support */
-        factory.setAfterRollbackProcessor(new DefaultAfterRollbackProcessor<>(deadLetterPublishingRecoverer, new FixedBackOff(0L, 2)));
+        factory.setAfterRollbackProcessor((AfterRollbackProcessor<Object, Object>) afterRollbackProcessor);
         return factory;
     }
 
@@ -110,6 +121,11 @@ public class KafkaTransactionApplication {
     @Bean
     public NewTopic testKafkaTopic(Config config) {
         return TopicBuilder.name(config.getKafkaTestTopic()).partitions(4).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic testKafkaTopicDLT(Config config) {
+        return TopicBuilder.name(config.getKafkaTestTopic() + ".DLT").partitions(4).replicas(1).build();
     }
 
     public static void main(String[] args) {
