@@ -14,10 +14,12 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.DefaultAfterRollbackProcessor;
 import org.springframework.kafka.support.converter.JsonMessageConverter;
 import org.springframework.kafka.transaction.ChainedKafkaTransactionManager;
 import org.springframework.kafka.transaction.KafkaTransactionManager;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.util.backoff.FixedBackOff;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.UUID;
@@ -40,23 +42,27 @@ public class KafkaTransactionApplication {
 
     @SuppressWarnings("unchecked")
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaTransactionListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<?, ?> consumerFactory,
             ChainedKafkaTransactionManager<?, ?> chainedKafkaTransactionManager) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         configurer.configure(factory, (ConsumerFactory<Object, Object>) consumerFactory);
-        factory.getContainerProperties().setTransactionManager(chainedKafkaTransactionManager);
+        /* transaction id defaults '<transactionIdPrefix>.<group.id>.<topic>.<partition>' */
+        factory.getContainerProperties().setTransactionManager(chainedKafkaTransactionManager); /* transaction support */
         factory.setMessageConverter(new JsonMessageConverter()); /* json support */
+        factory.setAfterRollbackProcessor(new DefaultAfterRollbackProcessor<>(new FixedBackOff(0L, 2)));
         return factory;
     }
 
+    /* Used in consumer-initiated transactions */
     @Bean
     @Primary
     public KafkaTemplate<?, ?> kafkaTemplate(ProducerFactory<?, ?> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 
+    /* Used in consumer-initiated transactions */
     @Bean
     @Primary
     public KafkaTransactionManager<?, ?> kafkaTransactionManager(ProducerFactory<?, ?> producerFactory) {
@@ -64,19 +70,23 @@ public class KafkaTransactionApplication {
     }
 
     /*
-     * Add standalone KafkaTemplate & KafkaTransactionManager,
+     * Standalone KafkaTemplate used in producer-initiated transactions: executeInTransaction().
      * so that zombie fencing is handled properly when partitions move from one instance to another after a rebalance.
      * See: https://docs.spring.io/spring-kafka/docs/2.6.0/reference/html/#transaction-id-prefix
      */
     @Bean("standaloneKafkaTemplate")
     public KafkaTemplate<?, ?> standaloneKafkaTemplate(KafkaProperties kafkaProperties, ProducerFactory<?, ?> producerFactory) {
         KafkaTemplate<?, ?> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+        /* transaction id defaults to 'transactionIdPrefix + n', override it. */
         kafkaTemplate.setTransactionIdPrefix(String.format("%s%s-",
                 kafkaProperties.getProducer().getTransactionIdPrefix(), UUID.randomUUID().toString()));
         kafkaTemplate.setAllowNonTransactional(true);
         return kafkaTemplate;
     }
 
+    /*
+     * Standalone KafkaTransactionManager used in producer-initiated transactions: @Transactional.
+     */
     @Bean("standaloneKafkaTransactionManager")
     public KafkaTransactionManager<?, ?> standaloneKafkaTransactionManager(KafkaProperties kafkaProperties, ProducerFactory<?, ?> producerFactory) {
         KafkaTransactionManager<?, ?> kafkaTransactionManager = new KafkaTransactionManager<>(producerFactory);
