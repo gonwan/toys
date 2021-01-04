@@ -53,7 +53,7 @@ public class KafkaTransactionApplication {
     public AfterRollbackProcessor<?, ?> afterRollbackProcessor(KafkaOperations<?, ?> kafkaOperations) {
         DeadLetterPublishingRecoverer deadLetterPublishingRecoverer = new DeadLetterPublishingRecoverer(kafkaOperations);
         ConsumerRecordRecoverer recoverer = (r, e) -> {
-            logger.info("Sending dead letter message...");
+            logger.info("Sending dead letter message: {}", r.value());
             deadLetterPublishingRecoverer.accept(r, e);
         };
         return new DefaultAfterRollbackProcessor<>(recoverer, new FixedBackOff(0L, 2), kafkaOperations, true);
