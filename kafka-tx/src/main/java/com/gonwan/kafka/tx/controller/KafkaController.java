@@ -33,16 +33,16 @@ public class KafkaController {
     private KafkaTemplate<?, ?> kafkaTemplate;
 
     @GetMapping("/topic/send")
-    public void topicSend(String message) {
+    public void topicSend() {
         User user = new User();
         user.setId(++id);
         user.setUsername("hahausername");
         user.setPassword("hahapassword");
-        Message<User> msg = MessageBuilder
+        Message<User> message = MessageBuilder
                 .withPayload(user)
                 .setHeader(KafkaHeaders.TOPIC, config.getKafkaTestTopic())
                 .build();
-        kafkaTemplate.send(msg);
+        kafkaTemplate.send(message);
     }
 
     @GetMapping("/topic/delete")
