@@ -11,9 +11,11 @@
 - There is no recoverer to be used with `AfterRollbackProcessor` in a batch listener. The listener must handle records that keep failing.
 - When `EOSMode.ALPHA` is used, set container property `subBatchPerPartition` to true to support zombie fencing. 
 - When synchronizing transactions, use `ChainedKafkaTransactionManager` with `Best Effort 1PC` pattern. So better to have message deduplication.
+- External systems like MySQL, Elasticsearch, Redis can be integrated via Kafka Connect, including sources & sinks.
 
 ### Batch Processing
-- 
+- If the sink is Kafka, use transaction to confirm exactly once. Otherwise, transaction is optional. Better to handle exceptions by yourself in both cases.
+- Or, simply process records one by one.
 
 ### Stateful Streaming
 - Kafka Streams
@@ -29,4 +31,4 @@
   - Error handling: use side output.
 
 ### Others
-- `spring-integration-kafka` is built on top of `spring-kafka`, with support for EAI(Enterprise Integration Application) patterns. But seems not so flexible to use.
+- `spring-integration-kafka` is built on top of `spring-kafka`, provides a new programming model to support EIP(Enterprise Integration Patterns). But it seems not so flexible in kafka batch & transaction support.

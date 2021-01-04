@@ -38,13 +38,14 @@ public class KafkaTransactionApplication {
         return new ChainedKafkaTransactionManager<>(kafkaTransactionManager, transactionManager);
     }
 
+    @SuppressWarnings("unchecked")
     @Bean
     public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
-            ConsumerFactory<Object, Object> consumerFactory,
+            ConsumerFactory<?, ?> consumerFactory,
             ChainedKafkaTransactionManager<?, ?> chainedKafkaTransactionManager) {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        configurer.configure(factory, consumerFactory);
+        configurer.configure(factory, (ConsumerFactory<Object, Object>) consumerFactory);
         factory.getContainerProperties().setTransactionManager(chainedKafkaTransactionManager);
         factory.setMessageConverter(new JsonMessageConverter()); /* json support */
         return factory;
