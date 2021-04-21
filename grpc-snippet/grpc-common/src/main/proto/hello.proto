@@ -7,14 +7,23 @@ option java_package = "com.gonwan.snippet.grpc";
 option java_outer_classname = "HelloWorldProto";
 
 service TestService {
-    rpc SayHello (HelloRequest) returns (HelloReply) {
-    }
+    rpc SayHello (HelloRequest) returns (HelloResponse) { }
+    rpc DownloadFile (DownloadRequest) returns (stream DownloadResponse) { }
 }
 
 message HelloRequest {
     optional string name = 1;
 }
 
-message HelloReply {
+message HelloResponse {
     optional string message = 1;
+}
+
+message DownloadRequest {
+    optional string filename = 1;
+}
+
+message DownloadResponse {
+    optional int64 id = 1;
+    optional bytes chunk = 2;
 }

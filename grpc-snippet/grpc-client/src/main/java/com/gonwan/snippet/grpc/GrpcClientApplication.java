@@ -11,7 +11,10 @@ public class GrpcClientApplication {
     public static void main(String[] args) {
         ApplicationContext applicationContext = SpringApplication.run(GrpcClientApplication.class, args);
         ClientService clientService = applicationContext.getBean(ClientService.class);
-        System.out.println(clientService.receiveGreeting("World"));
+        clientService.sayHello("World");
+        clientService.downloadFile("a");
+        clientService.downloadFile("b");
+        clientService.downloadFile("c");
     }
 
 }
