@@ -2,6 +2,7 @@ package com.gonwan.benchmark.springmvc.controller;
 
 import com.gonwan.benchmark.springmvc.model.World;
 import com.gonwan.benchmark.springmvc.model.WorldRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +18,19 @@ import java.util.concurrent.ThreadLocalRandom;
 @RestController
 public final class HelloController {
 
+    private static String TEXT100 = RandomStringUtils.random(100);
+
     @Autowired
     private WorldRepository worldRepository;
 
     @RequestMapping(value = "/text", produces = MediaType.TEXT_PLAIN_VALUE)
     public String text() {
         return "Hello, World!";
+    }
+
+    @RequestMapping(value = "/text100", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String text100() {
+        return TEXT100;
     }
 
     @RequestMapping("/json")
