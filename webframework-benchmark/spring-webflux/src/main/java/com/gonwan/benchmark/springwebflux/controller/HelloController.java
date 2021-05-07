@@ -5,7 +5,7 @@ import com.gonwan.benchmark.springwebflux.model.WorldRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
@@ -25,34 +25,34 @@ public class HelloController {
     @Autowired
     private WorldRepository worldRepository;
 
-    @RequestMapping(value = "/text", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/text", produces = MediaType.TEXT_PLAIN_VALUE)
     public String text() {
         return "Hello, World!";
     }
 
-    @RequestMapping(value = "/text100", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/text100", produces = MediaType.TEXT_PLAIN_VALUE)
     public String text100() {
         return TEXT100;
     }
 
-    @RequestMapping("/json")
+    @GetMapping("/json")
     public Map<String, String> json() {
         return Collections.singletonMap("message", "Hello, World!");
     }
 
-    @RequestMapping("/db")
+    @GetMapping("/db")
     public Mono<World> db() {
         return randomWorld();
     }
 
-    @RequestMapping("/queries")
+    @GetMapping("/queries")
     public Flux<World> queries(@RequestParam String count) {
         Integer[] ids = new Integer[parseQueryCount(count)];
         Arrays.setAll(ids, i -> random());
         return worldRepository.findAllById(Arrays.asList(ids));
     }
 
-    @RequestMapping("/updates")
+    @GetMapping("/updates")
     public Flux<World> updates(@RequestParam String count) {
         Flux<World> worlds = this.queries(count)
                 .map(x -> {
