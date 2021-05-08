@@ -10,6 +10,7 @@ This repository contains homemade java benchmarks using `spring-mvc`, `spring-we
 ### Environment 1
 - Server: 8C16G vm
 - Client: 4C8G vm * 2
+
 | Server       | Server Throughput | Server CPU |
 | ------------------ | ----------------: | ---------: |
 | **spring-mvc**     | 25k ~ 30k /s |      ~600% |
