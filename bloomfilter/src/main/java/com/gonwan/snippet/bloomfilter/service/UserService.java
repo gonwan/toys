@@ -88,12 +88,12 @@ public class UserService {
             userIdFilter2.put(uri.getUserId());
             userTokenFilter2.put(uri.getUserToken());
             mobileMd5Filter2.put(uri.getMobileMd5());
-            if (i == 0) {
+            if (i < 3) {
                 logger.info("For testing: {}", uri.toString());
                 reactiveRedisTemplate.opsForValue().set(REDIS_KEY, uri).block();
             }
             if (i % 10000 == 0) {
-                logger.info("Running {}..", i);
+                logger.info("Running {}...", i);
             }
         }
         userRouteInfoData = userRouteInfoData2;

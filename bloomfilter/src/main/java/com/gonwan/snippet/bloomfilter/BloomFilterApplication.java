@@ -15,8 +15,9 @@ public class BloomFilterApplication {
 
     @Bean
     public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(ReactiveRedisConnectionFactory factory) {
+        ObjectMapper objectMapper = new ObjectMapper(); /* disable default typing */
         RedisSerializationContext<String, Object> context = RedisSerializationContext.<String, Object>newSerializationContext(new StringRedisSerializer())
-                .value(new GenericJackson2JsonRedisSerializer())
+                .value(new GenericJackson2JsonRedisSerializer(objectMapper))
                 .build();
         return new ReactiveRedisTemplate<>(factory, context);
     }
