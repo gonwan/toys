@@ -16,12 +16,18 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.googlecode.cqengine.query.QueryFactory.equal;
 
@@ -33,10 +39,14 @@ public class UserService {
 
     private static final long FILTER_SIZE = 1 * 1000 * 1000;
 
+    /* multi-threading is faster, but pooling support in spring boot seems to be problematic. */
+    private static final int REDIS_CLIENT_SIZE = 4;
+
     private static final String REDIS_KEY = "redis";
 
-    private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
-    private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate2;
+    private List<ReactiveRedisTemplate> reactiveRedisTemplateList = new ArrayList<>();
+
+    private int reactiveRedisTemplateIndex = 0;
 
     private IndexedCollection<UserRouteInfo> userRouteInfoData;
 
@@ -67,14 +77,30 @@ public class UserService {
         }
     };
 
-    public UserService(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, Object> reactiveRedisTemplate,
-                       @Qualifier("reactiveRedisTemplate2") ReactiveRedisTemplate<String, Object> reactiveRedisTemplate2) {
-        this.reactiveRedisTemplate = reactiveRedisTemplate;
-        this.reactiveRedisTemplate2 = reactiveRedisTemplate2;
-        init(FILTER_SIZE);
+    public UserService(LettuceConnectionFactory factory) {
+        initReactiveRedisTemplate(factory);
+        initLocalIndex(FILTER_SIZE);
     }
 
-    private void init(long size) {
+    private void initReactiveRedisTemplate(LettuceConnectionFactory factory) {
+        for (int i = 0; i < REDIS_CLIENT_SIZE; i++) {
+            LettuceConnectionFactory factory2 = new LettuceConnectionFactory();
+            BeanUtils.copyProperties(factory, factory2);
+            factory2.afterPropertiesSet();
+            RedisSerializationContext<String, Object> context = RedisSerializationContext.<String, Object>newSerializationContext(new StringRedisSerializer())
+                    .value(new GenericJackson2JsonRedisSerializer())
+                    .build();
+            ReactiveRedisTemplate<String, Object> reactiveRedisTemplate = new ReactiveRedisTemplate<>(factory2, context);
+            reactiveRedisTemplateList.add(reactiveRedisTemplate);
+        }
+    }
+
+    private ReactiveRedisTemplate getReactiveRedisTemplate() {
+        int idx = (reactiveRedisTemplateIndex++) % reactiveRedisTemplateList.size();
+        return reactiveRedisTemplateList.get(idx);
+    }
+
+    private void initLocalIndex(long size) {
         /* index */
         IndexedCollection<UserRouteInfo> userRouteInfoData2 = new ConcurrentIndexedCollection<>();
         userRouteInfoData2.addIndex(HashIndex.onAttribute(USERID_ATTRIBUTE));
@@ -95,7 +121,7 @@ public class UserService {
             mobileMd5Filter2.put(uri.getMobileMd5());
             if (i < 3) {
                 logger.info("For testing: {}", uri.toString());
-                reactiveRedisTemplate.opsForValue().set(REDIS_KEY, uri).block();
+                reactiveRedisTemplateList.get(0).opsForValue().set(REDIS_KEY, uri).block();
             }
             if (i % (100 * 1000) == 0) {
                 logger.info("Running {}...", i);
@@ -107,8 +133,6 @@ public class UserService {
         mobileMd5Filter = mobileMd5Filter2;
         logger.info("Finished loading all data: size={}", userRouteInfoData.size());
     }
-
-    private boolean flag = false;
 
     public Mono<UserRouteInfo> query(String userId, boolean multi) {
         /* bloom filter */
@@ -125,15 +149,9 @@ public class UserService {
         }
         /* simulate redis fetch */
         if (multi) {
-            if (flag) {
-                flag = false;
-                return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
-            } else {
-                flag = true;
-                return reactiveRedisTemplate2.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
-            }
+            return getReactiveRedisTemplate().opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
         } else {
-            return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+            return reactiveRedisTemplateList.get(0).opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
         }
     }
 

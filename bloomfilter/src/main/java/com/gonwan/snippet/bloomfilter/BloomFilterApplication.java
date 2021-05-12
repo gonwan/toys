@@ -4,7 +4,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -14,15 +13,15 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @SpringBootApplication
 public class BloomFilterApplication {
 
-    @Bean
-    public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(ReactiveRedisConnectionFactory factory) {
+    //@Bean
+    public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(LettuceConnectionFactory factory) {
         RedisSerializationContext<String, Object> context = RedisSerializationContext.<String, Object>newSerializationContext(new StringRedisSerializer())
                 .value(new GenericJackson2JsonRedisSerializer())
                 .build();
         return new ReactiveRedisTemplate<>(factory, context);
     }
 
-    @Bean
+    //@Bean
     public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate2(LettuceConnectionFactory factory) {
         LettuceConnectionFactory factory2 = new LettuceConnectionFactory();
         BeanUtils.copyProperties(factory, factory2);
