@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Date;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public class UserRouteInfo {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -20,9 +19,11 @@ public class UserRouteInfo {
 
     private int zoneId;
 
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 

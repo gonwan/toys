@@ -1,6 +1,5 @@
 package com.gonwan.snippet.bloomfilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -15,9 +14,8 @@ public class BloomFilterApplication {
 
     @Bean
     public ReactiveRedisTemplate<String, Object> reactiveRedisTemplate(ReactiveRedisConnectionFactory factory) {
-        ObjectMapper objectMapper = new ObjectMapper(); /* disable default typing */
         RedisSerializationContext<String, Object> context = RedisSerializationContext.<String, Object>newSerializationContext(new StringRedisSerializer())
-                .value(new GenericJackson2JsonRedisSerializer(objectMapper))
+                .value(new GenericJackson2JsonRedisSerializer())
                 .build();
         return new ReactiveRedisTemplate<>(factory, context);
     }
