@@ -17,8 +17,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/query")
-    public Mono<UserRouteInfo> query(@RequestParam("userId") String userId) {
-        return userService.query(userId);
+    public Mono<UserRouteInfo> query(@RequestParam("userId") String userId, @RequestParam(value = "multi", defaultValue = "false") boolean multi) {
+        return userService.query(userId, multi);
     }
 
 }

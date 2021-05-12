@@ -16,6 +16,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,7 @@ import java.nio.charset.Charset;
 
 import static com.googlecode.cqengine.query.QueryFactory.equal;
 
+@SuppressWarnings("UnstableApiUsage")
 @Component
 public class UserService {
 
@@ -34,6 +36,7 @@ public class UserService {
     private static final String REDIS_KEY = "redis";
 
     private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
+    private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate2;
 
     private IndexedCollection<UserRouteInfo> userRouteInfoData;
 
@@ -64,8 +67,10 @@ public class UserService {
         }
     };
 
-    public UserService(ReactiveRedisTemplate<String, Object> reactiveRedisTemplate) {
+    public UserService(@Qualifier("reactiveRedisTemplate") ReactiveRedisTemplate<String, Object> reactiveRedisTemplate,
+                       @Qualifier("reactiveRedisTemplate2") ReactiveRedisTemplate<String, Object> reactiveRedisTemplate2) {
         this.reactiveRedisTemplate = reactiveRedisTemplate;
+        this.reactiveRedisTemplate2 = reactiveRedisTemplate2;
         init(FILTER_SIZE);
     }
 
@@ -103,7 +108,9 @@ public class UserService {
         logger.info("Finished loading all data: size={}", userRouteInfoData.size());
     }
 
-    public Mono<UserRouteInfo> query(String userId) {
+    private boolean flag = false;
+
+    public Mono<UserRouteInfo> query(String userId, boolean multi) {
         /* bloom filter */
         if (!userIdFilter.mightContain(userId) && !StringUtils.equals(userId, REDIS_KEY)) {
             return Mono.empty();
@@ -117,7 +124,17 @@ public class UserService {
             }
         }
         /* simulate redis fetch */
-        return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+        if (multi) {
+            if (flag) {
+                flag = false;
+                return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+            } else {
+                flag = true;
+                return reactiveRedisTemplate2.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+            }
+        } else {
+            return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+        }
     }
 
 }
