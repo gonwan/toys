@@ -1,11 +1,13 @@
 package com.gonwan.snippet.bloomfilter.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Date;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public class UserRouteInfo {
 
     private static ObjectMapper objectMapper = new ObjectMapper();

@@ -2,7 +2,7 @@
 GET http://localhost:8177/api/v1/query?userId=hahaha
 
 ### index case
-GET http://localhost:8177/api/v1/query?userId=bHKPkRJYs7Mhk8me4WP0hnQ8QMfJvNbe
+GET http://localhost:8177/api/v1/query?userId=66T1Q5yuc3Xw1sOkcH9Ax3kEuKIAmZ16
 
 ### redis case
 GET http://localhost:8177/api/v1/query?userId=redis

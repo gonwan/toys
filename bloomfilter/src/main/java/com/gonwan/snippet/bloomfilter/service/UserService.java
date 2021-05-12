@@ -92,7 +92,7 @@ public class UserService {
                 logger.info("For testing: {}", uri.toString());
                 reactiveRedisTemplate.opsForValue().set(REDIS_KEY, uri).block();
             }
-            if (i % 10000 == 0) {
+            if (i % (100 * 1000) == 0) {
                 logger.info("Running {}...", i);
             }
         }
