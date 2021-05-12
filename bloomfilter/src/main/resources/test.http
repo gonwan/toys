@@ -1,0 +1,10 @@
+### bloom filter case
+GET http://localhost:8177/api/v1/query?userId=hahaha
+
+### index case
+GET http://localhost:8177/api/v1/query?userId=bHKPkRJYs7Mhk8me4WP0hnQ8QMfJvNbe
+
+### redis case
+GET http://localhost:8177/api/v1/query?userId=redis
+
+###
