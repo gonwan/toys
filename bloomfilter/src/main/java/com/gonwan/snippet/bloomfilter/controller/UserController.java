@@ -21,4 +21,14 @@ public class UserController {
         return userService.query(userId, multi);
     }
 
+    @GetMapping("/query2")
+    public Mono<UserRouteInfo> query2() {
+        return userService.query2();
+    }
+
+    @GetMapping("/query3")
+    public Mono<String> query3() {
+        return userService.query3();
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.gonwan.snippet.bloomfilter.service;
 
 import com.gonwan.snippet.bloomfilter.model.UserRouteInfo;
+import com.gonwan.snippet.bloomfilter.util.ReactiveRedisTemplateGroup;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import com.googlecode.cqengine.ConcurrentIndexedCollection;
@@ -16,18 +17,13 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.googlecode.cqengine.query.QueryFactory.equal;
 
@@ -37,16 +33,9 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    private static final long FILTER_SIZE = 1 * 1000 * 1000;
-
-    /* multi-threading is faster, but pooling support in spring boot seems to be problematic. */
-    private static final int REDIS_CLIENT_SIZE = 4;
+    private static final long FILTER_SIZE = 1 * 10 * 1000;
 
     private static final String REDIS_KEY = "redis";
-
-    private List<ReactiveRedisTemplate> reactiveRedisTemplateList = new ArrayList<>();
-
-    private int reactiveRedisTemplateIndex = 0;
 
     private IndexedCollection<UserRouteInfo> userRouteInfoData;
 
@@ -55,6 +44,12 @@ public class UserService {
     private BloomFilter<String> userTokenFilter;
 
     private BloomFilter<String> mobileMd5Filter;
+
+    private ReactiveRedisTemplateGroup reactiveRedisTemplateGroup;
+
+    private ReactiveRedisTemplate reactiveRedisTemplate;
+
+    private ReactiveStringRedisTemplate reactiveStringRedisTemplate;
 
     private static final Attribute<UserRouteInfo, String> USERID_ATTRIBUTE = new SimpleAttribute<UserRouteInfo, String>("userId") {
         @Override
@@ -77,27 +72,12 @@ public class UserService {
         }
     };
 
-    public UserService(LettuceConnectionFactory factory) {
-        initReactiveRedisTemplate(factory);
+    @Autowired
+    public UserService(ReactiveRedisTemplateGroup reactiveRedisTemplateGroup, ReactiveRedisTemplate reactiveRedisTemplate, ReactiveStringRedisTemplate reactiveStringRedisTemplate) {
+        this.reactiveRedisTemplateGroup = reactiveRedisTemplateGroup;
+        this.reactiveRedisTemplate = reactiveRedisTemplate;
+        this.reactiveStringRedisTemplate = reactiveStringRedisTemplate;
         initLocalIndex(FILTER_SIZE);
-    }
-
-    private void initReactiveRedisTemplate(LettuceConnectionFactory factory) {
-        for (int i = 0; i < REDIS_CLIENT_SIZE; i++) {
-            LettuceConnectionFactory factory2 = new LettuceConnectionFactory();
-            BeanUtils.copyProperties(factory, factory2);
-            factory2.afterPropertiesSet();
-            RedisSerializationContext<String, Object> context = RedisSerializationContext.<String, Object>newSerializationContext(new StringRedisSerializer())
-                    .value(new GenericJackson2JsonRedisSerializer())
-                    .build();
-            ReactiveRedisTemplate<String, Object> reactiveRedisTemplate = new ReactiveRedisTemplate<>(factory2, context);
-            reactiveRedisTemplateList.add(reactiveRedisTemplate);
-        }
-    }
-
-    private ReactiveRedisTemplate getReactiveRedisTemplate() {
-        int idx = (reactiveRedisTemplateIndex++) % reactiveRedisTemplateList.size();
-        return reactiveRedisTemplateList.get(idx);
     }
 
     private void initLocalIndex(long size) {
@@ -121,7 +101,7 @@ public class UserService {
             mobileMd5Filter2.put(uri.getMobileMd5());
             if (i < 3) {
                 logger.info("For testing: {}", uri.toString());
-                reactiveRedisTemplateList.get(0).opsForValue().set(REDIS_KEY, uri).block();
+                reactiveRedisTemplate.opsForValue().set(REDIS_KEY, uri).block();
             }
             if (i % (100 * 1000) == 0) {
                 logger.info("Running {}...", i);
@@ -149,10 +129,18 @@ public class UserService {
         }
         /* simulate redis fetch */
         if (multi) {
-            return getReactiveRedisTemplate().opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+            return reactiveRedisTemplateGroup.get().opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
         } else {
-            return reactiveRedisTemplateList.get(0).opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+            return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
         }
+    }
+
+    public Mono<UserRouteInfo> query2() {
+        return reactiveRedisTemplate.opsForValue().get(REDIS_KEY).cast(UserRouteInfo.class);
+    }
+
+    public Mono<String> query3() {
+        return reactiveStringRedisTemplate.opsForValue().get(REDIS_KEY);
     }
 
 }
