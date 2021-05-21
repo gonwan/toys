@@ -11,5 +11,6 @@
         <module>spring-webmvc</module>
         <module>spring-webflux</module>
         <module>spring-reactor-netty</module>
+        <module>netty-proxy</module>
     </modules>
 </project>
