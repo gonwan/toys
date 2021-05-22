@@ -8,7 +8,7 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.util.function.Tuple2;
@@ -37,16 +37,17 @@ public class NettyProxy {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                     .channel(Epoll.isAvailable() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, 3000)
+                    .option(ChannelOption.SO_BACKLOG, 10000)
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4096, 16384))
                     .childOption(ChannelOption.AUTO_READ, false)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel channel) {
                             channel.pipeline()
-                                    //.addLast(new IdleStateHandler(60, 0, 0))
-                                    .addLast(new ProxyServerHandler());
+                                    //.addLast(new FlushConsolidationHandler(256, true))
+                                    .addLast(ProxyServerHandler.INSTANCE);
                         }
                     });
             ChannelFuture future = bootstrap.bind("0.0.0.0", PORT).sync();

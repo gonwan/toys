@@ -3,17 +3,21 @@ package com.gonwan.benchmark.nettyproxy;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+@ChannelHandler.Sharable
 public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyServerHandler.class);
 
     private static final AttributeKey<Channel> UPSTREAM_KEY = AttributeKey.valueOf("upstream");
+
+    public static final ProxyServerHandler INSTANCE = new ProxyServerHandler();
 
     private AtomicInteger index = new AtomicInteger(0);
 
@@ -28,11 +32,13 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                 .channel(ctx.channel().getClass())
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4096, 16384))
                 //.option(ChannelOption.AUTO_READ, false)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         socketChannel.pipeline()
+                                //.addLast(new FlushConsolidationHandler(256, true))
                                 .addLast(new ProxyUpstreamHandler(clientChannel));
                     }
                 });
@@ -43,13 +49,14 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     ctx.channel().attr(UPSTREAM_KEY).set(channelFuture.channel());
-                    ctx.read(); /* start to read */
+                    /* start to read */
+                    ctx.read();
+                    ctx.channel().config().setOption(ChannelOption.AUTO_READ, true);
                 } else {
                     ctx.close();
                 }
             }
         });
-        //channelFuture.sync();
     }
 
     @Override
@@ -67,9 +74,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
         upstreamChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws InterruptedException {
-                if (future.isSuccess()) {
-                    ctx.read();
-                } else {
+                if (!future.isSuccess()) {
                     ctx.close();
                     future.channel().close();
                 }
