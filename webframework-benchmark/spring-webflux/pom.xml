@@ -11,7 +11,7 @@
     <groupId>com.gonwan.benchmark</groupId>
     <artifactId>spring-webflux</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Spring Webflux</name>
+    <name>Spring WebFlux</name>
     <properties>
         <java.version>1.8</java.version>
     </properties>
