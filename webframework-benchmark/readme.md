@@ -11,13 +11,13 @@ This repository contains homemade java benchmarks using `spring-mvc`, `spring-we
 - Server: 8C16G vm
 - Client: 4C8G vm * 2
 
-| Server       | Server Throughput | Server CPU |
+| Server             | Server Throughput | Server CPU |
 | ------------------ | ----------------: | ---------: |
-| **spring-mvc**     | 25k ~ 30k /s |      ~600% |
-| **spring-webflux** | 90k ~ 110k /s |      ~780% |
-| **go-gin**         |  110k ~ 120k /s |      ~600% |
-| **go-gnet**        |  110k ~ 120k /s |      ~270% |
-| **netty-http**     |   110k ~ 120k /s |      ~480% |
+| **spring-mvc**     |      25k ~ 30k /s |      ~600% |
+| **spring-webflux** |     90k ~ 110k /s |      ~780% |
+| **go-gin**         |    110k ~ 120k /s |      ~600% |
+| **go-gnet**        |    110k ~ 120k /s |      ~270% |
+| **netty-http**     |    110k ~ 120k /s |      ~480% |
 | **netty-tcp**      |    110k ~ 120k /s |      ~360% |
 
 2 VM Clients are not able to fully utilize the server capability. The initial attempts were benchmarking only first 4 cases. And the `go-gnet` results made me wonder, it can give much more throughput. After reading the source of it, I found `go-gnet` case is actually a TCP server with very very little of HTTP implementation to fulfill the benchmark, which is unfair for other cases. Therefore, I added case 5/6 in java to align with it.
@@ -29,14 +29,17 @@ This repository contains homemade java benchmarks using `spring-mvc`, `spring-we
   - 8C16G vm * 1
   - 24C32G physical machine * 1
 
-| Server       | Server Throughput | Server CPU |
+| Server             | Server Throughput | Server CPU |
 | ------------------ | ----------------: | ---------: |
-| **spring-mvc**     | ~120k /s |   ~1560% |
-| **spring-webflux** | ~180k /s |  ~2380% |
-| **go-gin**         |   ~380k /s |   ~2350% |
-| **go-gnet**        | 560k ~ 580k /s |  ~1160% |
-| **netty-http**     | 560k ~ 580k /s | ~2350% |
-| **netty-tcp**      | 560k ~ 580k /s |   ~1460% |
+| **spring-mvc**     |           ~60k /s |      ~980% |
+| **spring-mvc-undertow**     | ~230k /s |     ~2300% |
+| **spring-webflux** |          ~200k /s |     ~2380% |
+| **go-gin**         |          ~380k /s |     ~2350% |
+| **go-gnet**        |    560k ~ 580k /s |     ~1160% |
+| **netty-http**     |    560k ~ 580k /s |     ~2350% |
+| **netty-tcp**      |    560k ~ 580k /s |     ~1460% |
+
+Much better throughput and scalability when using Undertow as servlet container, compared to Tomcat.
 
 Still room to give more throughput in `go-gnet` and `netty-tcp` cases. Not having so many idle systems for benchmarking now. The throughput should have a linear increment when more CPU is utilized, in both cases.
 

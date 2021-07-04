@@ -4,12 +4,16 @@ import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.coyote.http11.Http11Nio2Protocol;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -63,6 +67,11 @@ class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 @EnableJdbcRepositories
 @SpringBootApplication
 public class SpringMvcApplication {
+
+    //@Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> webServerFactoryCustomizer() {
+        return factory -> factory.setProtocol(Http11Nio2Protocol.class.getName());
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(SpringMvcApplication.class, args);
