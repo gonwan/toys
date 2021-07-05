@@ -39,9 +39,9 @@ This repository contains homemade java benchmarks using `spring-mvc`, `spring-we
 | **netty-http**     |    560k ~ 580k /s |     ~2350% |
 | **netty-tcp**      |    560k ~ 580k /s |     ~1460% |
 
-Much better throughput and scalability when using Undertow as servlet container, compared to Tomcat.
+Much better throughput and scalability when using Undertow as servlet container, as compared to Tomcat. After some profiling and tuning work, I found all worker threads block and poll from the task queue (a `LinkedBlockingQueue`). Tomcat with Nio.1 and Nio.2 have competitive performance. The only difference is that Nio.2 uses callbacks with async IO operations.
 
-Still room to give more throughput in `go-gnet` and `netty-tcp` cases. Not having so many idle systems for benchmarking now. The throughput should have a linear increment when more CPU is utilized, in both cases.
+Also still room to give more throughput in `go-gnet` and `netty-tcp` cases. Not having so many idle systems for benchmarking now. The throughput should have a linear increment when more CPU is utilized, in both cases.
 
 As a developer, `spring-mvc` or `go-gin` can still be the first choice, as they are easier to get started. 
 
