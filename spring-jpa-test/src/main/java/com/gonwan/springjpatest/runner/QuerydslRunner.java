@@ -1,5 +1,7 @@
 package com.gonwan.springjpatest.runner;
 
+import com.gonwan.springjpatest.model.QTUser;
+import com.gonwan.springjpatest.model.STUser;
 import com.gonwan.springjpatest.model.TUser;
 import com.gonwan.springjpatest.model.TUserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
