@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
@@ -27,7 +28,7 @@ public class JpaRunner2 implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(JpaRunner2.class);
 
     @Autowired
-    private JpaRunner2 jpaRunner2;
+    private ApplicationContext appContext;
 
     @Autowired
     private TUserRepository userRepository;
@@ -37,7 +38,7 @@ public class JpaRunner2 implements CommandLineRunner {
     }
 
     @Transactional
-    private Long init() {
+    public Long init() {
         userRepository.deleteAllInBatch();
         TUser user = new TUser();
         user.setUsername("11111user");
@@ -50,6 +51,7 @@ public class JpaRunner2 implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         logger.info("--- running test2 ---");
+        JpaRunner2 jpaRunner2 = appContext.getBean(JpaRunner2.class);
         Long id = jpaRunner2.init();
         ExecutorService es = Executors.newFixedThreadPool(2);
         /* user1 */

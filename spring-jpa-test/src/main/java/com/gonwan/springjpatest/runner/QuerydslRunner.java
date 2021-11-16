@@ -1,7 +1,5 @@
 package com.gonwan.springjpatest.runner;
 
-import com.gonwan.springjpatest.model.QTUser;
-import com.gonwan.springjpatest.model.STUser;
 import com.gonwan.springjpatest.model.TUser;
 import com.gonwan.springjpatest.model.TUserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -10,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -27,14 +26,14 @@ public class QuerydslRunner implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(QuerydslRunner.class);
 
+    @Autowired
+    private ApplicationContext appContext;
+
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
     private TUserRepository userRepository;
-
-    @Autowired
-    private QuerydslRunner querydslRunner;
 
     @Autowired
     private MySQLQueryFactory mySQLQueryFactory;
@@ -55,6 +54,7 @@ public class QuerydslRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        QuerydslRunner querydslRunner = appContext.getBean(QuerydslRunner.class);
         querydslRunner.init();
         //querydslRunner.test1();
         querydslRunner.test2();
