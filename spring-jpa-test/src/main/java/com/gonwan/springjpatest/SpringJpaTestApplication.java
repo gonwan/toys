@@ -20,10 +20,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.util.ReflectionUtils;
 
-import javax.inject.Provider;
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.util.function.Supplier;
 
 class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
@@ -87,7 +87,7 @@ public class SpringJpaTestApplication {
 
     @Bean
     public MySQLQueryFactory sqlQueryFactory(DataSource dataSource) {
-        Provider<Connection> provider = new SpringConnectionProvider(dataSource);
+        Supplier<Connection> provider = new SpringConnectionProvider(dataSource);
         return new MySQLQueryFactory(querydslConfiguration(), provider);
     }
 
