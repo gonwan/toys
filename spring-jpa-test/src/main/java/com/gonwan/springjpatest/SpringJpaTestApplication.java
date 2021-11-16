@@ -22,8 +22,6 @@ import org.springframework.util.ReflectionUtils;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.function.Supplier;
 
 class DatasourceProxyBeanPostProcessor implements BeanPostProcessor {
 
@@ -87,7 +85,7 @@ public class SpringJpaTestApplication {
 
     @Bean
     public MySQLQueryFactory sqlQueryFactory(DataSource dataSource) {
-        Supplier<Connection> provider = new SpringConnectionProvider(dataSource);
+        SpringConnectionProvider provider = new SpringConnectionProvider(dataSource);
         return new MySQLQueryFactory(querydslConfiguration(), provider);
     }
 
