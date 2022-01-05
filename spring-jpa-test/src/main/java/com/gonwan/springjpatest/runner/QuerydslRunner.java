@@ -12,6 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -20,6 +21,14 @@ import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+interface TUserDto {
+
+    Long getId();
+
+    String getUsername();
+
+}
 
 /*
  * Jpa QueryByExample can be also used, but QueryDSL seems to be easier to understand.
@@ -74,7 +83,11 @@ public class QuerydslRunner implements CommandLineRunner {
         logger.info("users1: {}", users1);
         Iterable<TUser> users2 = userRepository.findAll(qtUser.username.eq("username_2"));
         logger.info("users2: {}", users2);
-        queryFactory.update(qtUser).where(qtUser.username.eq("username_3")).set(qtUser.password, "password_333").execute();
+        List<TUserDto> users3 = userRepository.findBy(
+                    qtUser.username.eq("username_3"),
+                    q -> q.as(TUserDto.class).sortBy(Sort.unsorted()).all()); /* still selecting all fields, nonsense. */
+        logger.info("users3: {}", users3);
+        queryFactory.update(qtUser).where(qtUser.username.eq("username_4")).set(qtUser.password, "password_444").execute();
     }
 
     public void test2() {
