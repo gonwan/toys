@@ -27,9 +27,12 @@ public class JpaRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         logger.info("--- running test1 ---");
+        logger.info("=== running join query ===");
+        List<Object[]> usersAll = userRepository.queryAllById(1L);
+        logger.info("user={}, user2={}, user3={}", usersAll.get(0)[0], usersAll.get(0)[1], usersAll.get(0)[2]);
         userRepository.deleteAllInBatch();
-        List<TUser> userList = new ArrayList<>();
         logger.info("=== running insert ===");
+        List<TUser> userList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             TUser user = new TUser();
             user.setUsername("username_" + i);
