@@ -105,7 +105,7 @@
                     <jdbcPassword>sc_passw0rd</jdbcPassword>
                     <packageName>com.gonwan.springjpatest.model</packageName>
                     <namePrefix>S</namePrefix>
-                    <tableNamePattern>t_user</tableNamePattern>
+                    <tableNamePattern>t_user*</tableNamePattern>
                     <targetFolder>${project.basedir}/target/generated-sources/java</targetFolder>
                 </configuration>
                 <dependencies>

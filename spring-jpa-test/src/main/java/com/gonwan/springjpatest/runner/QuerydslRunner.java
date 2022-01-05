@@ -1,9 +1,8 @@
 package com.gonwan.springjpatest.runner;
 
-import com.gonwan.springjpatest.model.QTUser;
-import com.gonwan.springjpatest.model.STUser;
-import com.gonwan.springjpatest.model.TUser;
-import com.gonwan.springjpatest.model.TUserRepository;
+import com.gonwan.springjpatest.model.*;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.sql.mysql.MySQLQueryFactory;
 import org.slf4j.Logger;
@@ -22,6 +21,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Jpa QueryByExample can be also used, but QueryDSL seems to be easier to understand.
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @Component
 public class QuerydslRunner implements CommandLineRunner {
@@ -59,7 +61,8 @@ public class QuerydslRunner implements CommandLineRunner {
         QuerydslRunner querydslRunner = appContext.getBean(QuerydslRunner.class);
         querydslRunner.init();
         //querydslRunner.test1();
-        querydslRunner.test2();
+        //querydslRunner.test2();
+        querydslRunner.test3();
     }
 
     @Transactional
@@ -74,9 +77,22 @@ public class QuerydslRunner implements CommandLineRunner {
         queryFactory.update(qtUser).where(qtUser.username.eq("username_3")).set(qtUser.password, "password_333").execute();
     }
 
-    @Transactional
     public void test2() {
+        /* see: http://querydsl.com/static/querydsl/5.0.0/reference/html/ch03s02.html */
         logger.info("--- running test2 ---");
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        QTUser2 qtUser2 = QTUser2.tUser2;
+        QTUser3 qtUser3 = QTUser3.tUser3;
+        Tuple res = queryFactory.select(qtUser2, Projections.bean(TUser3.class, qtUser3.id, qtUser3.username))
+                .from(qtUser2, qtUser3)
+                .where(qtUser2.id.eq(qtUser3.id))
+                .fetchFirst();
+        logger.info("tuser2={} tuser3={}", res.get(0, TUser2.class), res.get(1, TUser3.class));
+    }
+
+    @Transactional
+    public void test3() {
+        logger.info("--- running test3 ---");
         STUser stUser = STUser.tUser;
         /* populate */
         TUser tUser = new TUser();
