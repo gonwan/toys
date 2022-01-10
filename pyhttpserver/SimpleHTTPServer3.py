@@ -22,7 +22,6 @@ import shutil
 import mimetypes
 import re
 from io import BytesIO
-import sys
 
 
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -57,7 +56,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         """Serve a POST request."""
         r, info = self.deal_post_data()
-        print((r, info, "by: ", self.client_address))
+        print("%s %s by: %s" %  (r, info, self.client_address))
         f = BytesIO()
         f.write(b'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
         f.write(b"<html>\n<title>Upload Result Page</title>\n")
@@ -103,7 +102,6 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         remainbytes -= len(line)
         line = self.rfile.readline()
         remainbytes -= len(line)
-        print("try to open {}".format(fn))
         try:
             out = open(fn, 'wb')
         except IOError:
@@ -228,7 +226,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         path = path.split('#',1)[0]
         path = posixpath.normpath(urllib.parse.unquote(path))
         words = path.split('/')
-        words = [_f for _f in words if _f]
+        words = filter(None, words)
         path = os.getcwd()
         for word in words:
             drive, word = os.path.splitdrive(word)
