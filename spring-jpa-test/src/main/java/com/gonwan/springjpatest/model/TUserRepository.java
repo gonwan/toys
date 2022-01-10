@@ -8,6 +8,10 @@ import java.util.List;
 
 public interface TUserRepository extends JpaRepository<TUser, Long>, QuerydslPredicateExecutor<TUser> {
 
+    /* named query, see jpa-named-queries.properties */
+    @Query
+    TUser queryById(Long id);
+
     /* hard to avoid n+1 fetch if tuple construction is used. */
     @Query("select tu, tu2, tu3" +
             " from TUser tu" +
