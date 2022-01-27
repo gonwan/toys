@@ -4,6 +4,7 @@ import com.gonwan.benchmark.springmvc.model.World;
 import com.gonwan.benchmark.springmvc.model.WorldRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,10 +19,20 @@ import java.util.concurrent.ThreadLocalRandom;
 @RestController
 public final class HelloController {
 
-    private static String TEXT100 = RandomStringUtils.random(100);
+    private static final String TEXT100 = RandomStringUtils.randomAlphabetic(100);
+
+    private static final String REDIS_KEY = "redis";
 
     @Autowired
     private WorldRepository worldRepository;
+
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    public HelloController(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        stringRedisTemplate.opsForValue().set(REDIS_KEY, TEXT100);
+    }
 
     @GetMapping(value = "/text", produces = MediaType.TEXT_PLAIN_VALUE)
     public String text() {
@@ -59,6 +70,11 @@ public final class HelloController {
             w.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         }
         return worldRepository.saveAll(worlds);
+    }
+
+    @GetMapping("/redis")
+    public String redis() {
+        return stringRedisTemplate.opsForValue().get(REDIS_KEY);
     }
 
     private World randomWorld() {

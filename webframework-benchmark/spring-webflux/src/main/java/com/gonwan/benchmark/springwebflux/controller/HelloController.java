@@ -4,6 +4,7 @@ import com.gonwan.benchmark.springwebflux.model.World;
 import com.gonwan.benchmark.springwebflux.model.WorldRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,10 +21,20 @@ import java.util.concurrent.ThreadLocalRandom;
 @RestController
 public class HelloController {
 
-    private static String TEXT100 = RandomStringUtils.random(100);
+    private static final String TEXT100 = RandomStringUtils.randomAlphabetic(100);
+
+    private static final String REDIS_KEY = "redis";
 
     @Autowired
     private WorldRepository worldRepository;
+
+    private ReactiveStringRedisTemplate reactiveStringRedisTemplate;
+
+    @Autowired
+    public HelloController(ReactiveStringRedisTemplate reactiveStringRedisTemplate) {
+        this.reactiveStringRedisTemplate = reactiveStringRedisTemplate;
+        reactiveStringRedisTemplate.opsForValue().set(REDIS_KEY, TEXT100).block();
+    }
 
     @GetMapping(value = "/text", produces = MediaType.TEXT_PLAIN_VALUE)
     public String text() {
@@ -62,6 +73,11 @@ public class HelloController {
                     return x;
                 });
         return worldRepository.saveAll(worlds);
+    }
+
+    @GetMapping("/redis")
+    public Mono<String> redis() {
+        return reactiveStringRedisTemplate.opsForValue().get(REDIS_KEY);
     }
 
     private Mono<World> randomWorld() {
