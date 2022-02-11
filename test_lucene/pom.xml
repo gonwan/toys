@@ -1,139 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.lucene</groupId>
+  <groupId>com.gonwan.toys</groupId>
   <artifactId>lucene-demo</artifactId>
   <packaging>jar</packaging>
   <version>1.0.0</version>
   <name>lucene demo</name>
-  <url>http://lucene.apache.org</url>
+  <properties>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
-      <version>4.7.2</version>
+      <version>8.11.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
-      <version>4.7.2</version>
+      <version>8.11.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queryparser</artifactId>
-      <version>4.7.2</version>
+      <version>8.11.1</version>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.4</version>
-        <executions>
-          <execution>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <archive>
-            <addMavenDescriptor>false</addMavenDescriptor>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <copy todir="${project.build.directory}/docs">
-                  <fileset dir="${project.basedir}/docs"/>
-                </copy>
-                <property name="final.name" value="${project.build.directory}/${project.build.finalName}"/>
-                <property name="archive.includes" value="${project.build.finalName}.${project.packaging} lib/ docs/"/>
-                <property name="tar.destfile" value="${final.name}.tar"/>
-                <zip basedir="${project.build.directory}" destfile="${final.name}.zip" includes="${archive.includes}" />
-                <tar basedir="${project.build.directory}" destfile="${tar.destfile}" includes="${archive.includes}" />
-                <gzip src="${tar.destfile}" destfile="${tar.destfile}.gz" />
-                <bzip2 src="${tar.destfile}" destfile="${tar.destfile}.bz2" />
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-  <profiles>
-    <!-- mvn test -Pdemo -->
-    <profile>
-      <id>demo</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.2.1</version>
-            <executions>
-              <execution>
-                <id>index-files</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>java</goal>
-                </goals>
-                <configuration>
-                  <mainClass>org.apache.lucene.demo.IndexFiles</mainClass>
-                  <arguments>
-                    <argument>-docs</argument>
-                    <argument>docs</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-              <execution>
-                <id>search-files</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>java</goal>
-                </goals>
-                <configuration>
-                  <mainClass>org.apache.lucene.demo.SearchFiles</mainClass>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
-

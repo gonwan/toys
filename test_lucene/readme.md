@@ -1,2 +1,2 @@
 ## test lucene
-Demo code from the official lucene project. Version 4.7.2 is used to be compatible with Java 6.
+Demo code from the official lucene project. 
