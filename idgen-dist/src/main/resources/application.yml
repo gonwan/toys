@@ -1,0 +1,33 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: camellia-id-gen
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/idgen-dist?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=false
+    username: java
+    password: java666
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+camellia-id-gen-snowflake:
+  sequence-bits: 16
+  region-bits: 3
+  region-id: 0
+  worker-id-bits: 3
+  worker-id: 0
+
+camellia-id-gen-segment:
+  region-bits: 0
+  region-id: 0
+  region-id-shifting-bits: 8
+  tag-count: 50
+  step: 1000
+  max-retry: 100
+  retry-interval-millis: 10

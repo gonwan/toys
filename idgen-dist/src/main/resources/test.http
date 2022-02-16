@@ -1,0 +1,19 @@
+GET http://localhost:8090/camellia/id/gen/snowflake/genId
+
+###
+
+GET http://localhost:8090/camellia/id/gen/segment/genId?tag=a
+
+###
+
+GET http://localhost:8090/camellia/id/gen/segment/genIds?tag=a&count=4000
+
+###
+
+GET http://localhost:8090/test/snowflake?loop=10000000
+
+###
+
+GET http://localhost:8090/test/segment?loop=1000000
+
+###
