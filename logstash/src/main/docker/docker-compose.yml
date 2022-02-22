@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  logstash:
+    image: logstash:7.7.0
+    container_name: logstash
+    command: logstash -f /etc/logstash/conf.d/logstash.conf
+    volumes:
+      - ./config:/etc/logstash/conf.d
+    ports:
+      - "5000:5000"
