@@ -3,6 +3,8 @@ package com.gonwan.benchmark.springmvc.controller;
 import com.gonwan.benchmark.springmvc.model.World;
 import com.gonwan.benchmark.springmvc.model.WorldRepository;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -18,6 +20,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 public final class HelloController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HelloController.class);
 
     private static final String TEXT100 = RandomStringUtils.randomAlphabetic(100);
 
@@ -75,6 +79,12 @@ public final class HelloController {
     @GetMapping("/redis")
     public String redis() {
         return stringRedisTemplate.opsForValue().get(REDIS_KEY);
+    }
+
+    @GetMapping("/luatest")
+    public void luatest(@RequestParam(value = "tid", defaultValue = "-1") String tid,
+                        @RequestParam(value = "uuid", defaultValue = "") String uuid) {
+        logger.info("tid={} uuid={}", tid, uuid);
     }
 
     private World randomWorld() {
