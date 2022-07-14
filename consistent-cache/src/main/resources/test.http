@@ -10,3 +10,19 @@ Content-Type: application/json
 
 ###
 GET http://localhost:9090/getUser?id=111
+
+###
+GET http://localhost:9090/findUser?id=1
+
+###
+POST http://localhost:9090/saveUser
+Content-Type: application/json
+
+{
+  "id": 1,
+  "username": "username1",
+  "password": "password1"
+}
+
+###
+GET http://localhost:9090/deleteUser?id=1

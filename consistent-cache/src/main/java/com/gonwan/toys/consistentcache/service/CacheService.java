@@ -1,10 +1,8 @@
 package com.gonwan.toys.consistentcache.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gonwan.toys.consistentcache.model.UserDO;
 import com.gonwan.toys.consistentcache.util.JsonUtils;
-import com.gonwan.toys.consistentcache.vo.UserVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
@@ -17,8 +15,6 @@ import java.time.Duration;
 
 @Service
 public class CacheService {
-
-    private static final Logger logger = LoggerFactory.getLogger(CacheService.class);
 
     private static final String CACHE_PREFIX = "cachetest:u:";
 
@@ -34,36 +30,36 @@ public class CacheService {
     private ObjectMapper objectMapper;
 
     /* double delete */
-    public void setUser(UserVO userVO) {
+    public void setUser(UserDO userDO) {
         /* first delete */
-        stringRedisTemplate.delete(CACHE_PREFIX + userVO.getId());
+        stringRedisTemplate.delete(CACHE_PREFIX + userDO.getId());
         int r = jdbcTemplate.update("insert ignore into t_user(`id`, `username`, `password`) " +
                         "values (?, ?, ?) " +
                         "on duplicate key update `username` = ?, `password` = ?",
                 ps -> {
-                    ps.setInt(1, userVO.getId());
-                    ps.setString(2, userVO.getUsername());
-                    ps.setString(3, userVO.getPassword());
-                    ps.setString(4, userVO.getUsername());
-                    ps.setString(5, userVO.getPassword());
+                    ps.setLong(1, userDO.getId());
+                    ps.setString(2, userDO.getUsername());
+                    ps.setString(3, userDO.getPassword());
+                    ps.setString(4, userDO.getUsername());
+                    ps.setString(5, userDO.getPassword());
                 });
         if (r == 1) {
             /* second delete */
             /* FIXME: mark-delete or use version number strategy to improve consistency */
-            stringRedisTemplate.delete(CACHE_PREFIX + userVO.getId());
+            stringRedisTemplate.delete(CACHE_PREFIX + userDO.getId());
         }
     }
 
-    public UserVO getUser(Integer id) {
+    public UserDO getUser(Long id) {
         /* read from cache */
         String rstr = stringRedisTemplate.opsForValue().get(CACHE_PREFIX + id);
         if (rstr != null) {
-            return JsonUtils.str2Obj(objectMapper, rstr, UserVO.class);
+            return JsonUtils.str2Obj(objectMapper, rstr, UserDO.class);
         }
         /* read from db */
-        UserVO userVO = jdbcTemplate.query("select * from t_user where `id` = " + id, rs -> {
+        UserDO userDO = jdbcTemplate.query("select * from t_user where `id` = " + id, rs -> {
             /* add dummy empty value, to prevent penetration(穿透) */
-            UserVO u = new UserVO();
+            UserDO u = new UserDO();
             if (rs.next()) {
                 u.setId(id);
                 u.setUsername(rs.getString(2));
@@ -73,7 +69,7 @@ public class CacheService {
         });
         /* write to cache, set expiration, also fill non-exist values */
         /* FIXME: add lock to avoid breakdown(击穿): large number of requests when a hotspot is deleted/evicted */
-        String wstr = JsonUtils.obj2Str(objectMapper, userVO);
+        String wstr = JsonUtils.obj2Str(objectMapper, userDO);
         stringRedisTemplate.executePipelined(new SessionCallback<Void>() {
             @Override
             public <K, V> Void execute(RedisOperations<K, V> operations) throws DataAccessException {
@@ -84,7 +80,7 @@ public class CacheService {
                 return null;
             }
         });
-        return userVO;
+        return userDO;
     }
 
 }

@@ -1,18 +1,23 @@
-package com.gonwan.toys.consistentcache.vo;
+package com.gonwan.toys.consistentcache.model;
 
-public class UserVO {
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-    private Integer id;
+@Table("t_user")
+public class UserDO {
+
+    @Id
+    private Long id;
 
     private String username;
 
     private String password;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
