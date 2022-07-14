@@ -1,0 +1,12 @@
+POST http://localhost:9090/setUser
+Content-Type: application/json
+
+{
+  "id": 111,
+  "username": "username111",
+  "password": "password111"
+}
+
+###
+GET http://localhost:9090/getUser?id=111
+
