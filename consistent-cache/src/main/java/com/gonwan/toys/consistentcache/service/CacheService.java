@@ -62,6 +62,7 @@ public class CacheService {
         }
         /* read from db */
         UserVO userVO = jdbcTemplate.query("select * from t_user where `id` = " + id, rs -> {
+            /* add dummy empty value, to prevent penetration(穿透) */
             UserVO u = new UserVO();
             if (rs.next()) {
                 u.setId(id);
@@ -72,12 +73,13 @@ public class CacheService {
         });
         /* write to cache, set expiration, also fill non-exist values */
         /* FIXME: add lock to avoid breakdown(击穿): large number of requests when a hotspot is deleted/evicted */
-        String wstr = (userVO == null) ? "{}" : JsonUtils.obj2Str(objectMapper, userVO);
+        String wstr = JsonUtils.obj2Str(objectMapper, userVO);
         stringRedisTemplate.executePipelined(new SessionCallback<Void>() {
             @Override
             public <K, V> Void execute(RedisOperations<K, V> operations) throws DataAccessException {
                 StringRedisTemplate template = (StringRedisTemplate) operations;
                 template.opsForValue().set(CACHE_PREFIX + id, wstr);
+                /* no need to handle avalanche(雪崩), since we are handling per-user requests */
                 template.expire(CACHE_PREFIX + id, CACHE_DEFAULT_DURATION);
                 return null;
             }
