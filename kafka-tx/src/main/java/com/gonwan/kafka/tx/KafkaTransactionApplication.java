@@ -148,12 +148,28 @@ public class KafkaTransactionApplication {
 
     @Bean
     public NewTopic testKafkaTopic(Config config) {
-        return TopicBuilder.name(config.getKafkaTestTopic()).partitions(4).replicas(1).build();
+        return TopicBuilder.name(config.getKafkaTestTopic())
+                .partitions(4)
+                .replicas(1)
+                .build();
     }
 
     @Bean
     public NewTopic testKafkaTopicDLT(Config config) {
-        return TopicBuilder.name(config.getKafkaTestTopic() + ".DLT").partitions(4).replicas(1).build();
+        return TopicBuilder.name(config.getKafkaTestTopic() + ".DLT")
+                .partitions(4)
+                .replicas(1)
+                .build();
+    }
+
+    /* a compact topic is just about compact clean policy, which saves storage. */
+    //@Bean
+    public NewTopic testKafkaCompactTopic(Config config) {
+        return TopicBuilder.name(config.getKafkaTestCompactTopic())
+                .partitions(4)
+                .replicas(1)
+                .compact()
+                .build();
     }
 
     public static void main(String[] args) {
