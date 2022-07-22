@@ -8,16 +8,16 @@ import (
 
 /*
  * cross build with:
- * # GOOS=linux GOARCH=amd64 go build main.go
+ * # GOOS=linux GOARCH=amd64 go build
  */
 func main() {
-	proxyServer, err := newProxyServer()
+	srv, err := newProxyServer()
 	if err != nil {
 		log.Printf("Failed to create proxy server: %v", err)
 		return
 	}
 	addr := "tcp://:8093"
-	err = gnet.Serve(proxyServer, addr,
+	err = gnet.Serve(srv, addr,
 		gnet.WithOptions(gnet.Options{Multicore: true, LockOSThread: true, TCPNoDelay: gnet.TCPNoDelay, TCPKeepAlive: time.Minute * 15}))
 	if err != nil {
 		log.Printf("Failed to start proxy server: %v", err)
