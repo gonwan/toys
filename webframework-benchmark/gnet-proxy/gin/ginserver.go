@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+/*
+ * cross build with:
+ * # GOOS=linux GOARCH=amd64 go build gin/ginserver.go
+ */
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -17,6 +21,7 @@ func main() {
 			"Message": "Hello, World!",
 		})
 	})
-	log.Println("Starting gin server..")
-	r.Run(":8099")
+	addr := ":8099"
+	log.Printf("Starting gin server at %s..", addr)
+	r.Run(addr)
 }
