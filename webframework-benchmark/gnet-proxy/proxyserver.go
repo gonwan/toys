@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	upstreamServers = [...]string{"172.16.56.137:8099", "72.16.56.138:8099", "72.16.56.139:8099"}
+	upstreamServers = [...]string{"172.16.56.137:8099", "172.16.56.138:8099", "172.16.56.139:8099"}
 )
 
 type proxyServer struct {
@@ -31,6 +31,7 @@ func newProxyServer() (srv *proxyServer, err error) {
 		log.Printf("Failed to create gnet client: %v", err)
 		return
 	}
+	_ = cli.Start()
 	srv = &proxyServer{
 		Client: cli,
 	}
@@ -45,9 +46,7 @@ func (ps *proxyServer) React(packet []byte, c gnet.Conn) (out []byte, action gne
 		log.Printf("Failed to connect to %s: %v", upstreamServer, err)
 		return nil, gnet.None
 	}
-	conn.SetContext(c)      /* pass context */
-	err = ps.Client.Start() /* move to new?? */
-	//defer ps.Client.Stop()
+	conn.SetContext(c) /* pass context */
 	if err != nil {
 		log.Printf("Failed to start client to %s: %v", upstreamServer, err)
 		return nil, gnet.None

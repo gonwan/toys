@@ -17,11 +17,10 @@ func main() {
 		return
 	}
 	addr := "tcp://:8093"
+	log.Printf("Starting proxy server %s..", addr)
 	err = gnet.Serve(srv, addr,
-		gnet.WithOptions(gnet.Options{Multicore: true, LockOSThread: true, TCPNoDelay: gnet.TCPNoDelay, TCPKeepAlive: time.Minute * 15}))
+		gnet.WithOptions(gnet.Options{Multicore: true, LockOSThread: true, ReusePort: true, TCPNoDelay: gnet.TCPNoDelay, TCPKeepAlive: time.Minute * 15}))
 	if err != nil {
 		log.Printf("Failed to start proxy server: %v", err)
-		return
 	}
-	log.Printf("Proxy server is now running: %s", addr)
 }

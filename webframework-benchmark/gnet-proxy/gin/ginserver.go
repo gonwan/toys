@@ -23,5 +23,8 @@ func main() {
 	})
 	addr := ":8099"
 	log.Printf("Starting gin server at %s..", addr)
-	r.Run(addr)
+	err := r.Run(addr)
+	if err != nil {
+		log.Printf("Failed to start gin server: %v", err)
+	}
 }
