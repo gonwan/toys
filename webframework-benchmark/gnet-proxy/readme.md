@@ -1,4 +1,4 @@
 ### NOTE
 
 - Not working!!!
-- Seems `gnet` is not battle-tested. The proxy code leaks connections, even with hard-coded http responses. The `gnet` client code is recently implemented.
+- Seems `gnet` is not battle-tested. Hanging after copying official sample with large concurrency.

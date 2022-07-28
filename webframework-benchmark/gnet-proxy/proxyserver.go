@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/panjf2000/gnet"
+	goPool "github.com/panjf2000/gnet/pkg/pool/goroutine"
 	"go.uber.org/atomic"
 	"log"
 )
@@ -12,8 +13,9 @@ var (
 
 type proxyServer struct {
 	*gnet.EventServer
-	Client *gnet.Client
-	Index  atomic.Int32
+	Client     *gnet.Client
+	WorkerPool *goPool.Pool
+	Index      atomic.Int32
 }
 
 func (ps *proxyServer) getUpstreamServer() string {
@@ -23,7 +25,7 @@ func (ps *proxyServer) getUpstreamServer() string {
 }
 
 func newProxyServer() (srv *proxyServer, err error) {
-	cli, err := gnet.NewClient(&upstreamClient{},
+	cli, err := gnet.NewClient(&upstreamClient{WorkerPool: goPool.Default()},
 		gnet.WithMulticore(true),
 		gnet.WithLockOSThread(true),
 		gnet.WithTCPNoDelay(gnet.TCPNoDelay))
@@ -33,7 +35,8 @@ func newProxyServer() (srv *proxyServer, err error) {
 	}
 	_ = cli.Start()
 	srv = &proxyServer{
-		Client: cli,
+		Client:     cli,
+		WorkerPool: goPool.Default(),
 	}
 	return
 }
@@ -51,11 +54,14 @@ func (ps *proxyServer) React(packet []byte, c gnet.Conn) (out []byte, action gne
 		log.Printf("Failed to start client to %s: %v", upstreamServer, err)
 		return nil, gnet.None
 	}
-	err = conn.AsyncWrite(requestPacket)
-	if err != nil {
-		log.Printf("Failed to write to %s: %v", upstreamServer, err)
-		return nil, gnet.Close
-	}
+	_ = ps.WorkerPool.Submit(func() {
+		_ = conn.AsyncWrite(requestPacket)
+	})
+	//err = conn.AsyncWrite(requestPacket)
+	//if err != nil {
+	//	log.Printf("Failed to write to %s: %v", upstreamServer, err)
+	//	return nil, gnet.Close
+	//}
 	return nil, gnet.None
 }
 
