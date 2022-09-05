@@ -2,21 +2,21 @@
 
 ### Features
 - Compiles on any C89 compilers
-- Demostrates the publish-subscribe pattern with & without envelopes of ZeroMQ
+- Demonstrates the publish-subscribe pattern with & without envelopes of ZeroMQ
 
 ### Build
 
 - Windows
 
-Works with [vcpkg](https://github.com/Microsoft/vcpkg) to simpify build. After bootstrap, run:
+Works with [vcpkg](https://github.com/Microsoft/vcpkg) to simplify build. After bootstrap, run:
 ```
-# vcpkg install zeromq
+# vcpkg install zeromq:x64-windows
 ```
 According to the [document](https://github.com/Microsoft/vcpkg/blob/master/docs/users/integration.md), invoke cmake with the toolchain file.
 
 - Linux / MacOS: 
 ```
-# sudo apt-get install libzmq3-dev
+# sudo yum install zeromq-devel
 # brew install zmq
 # cmake -G "Unix Makefiles"
 ```
