@@ -8,11 +8,11 @@
 
 - Windows
 
-Works with [vcpkg](https://github.com/Microsoft/vcpkg) to simplify build. After bootstrap, run:
+Works with [vcpkg](https://github.com/microsoft/vcpkg) to simplify build. After bootstrap, run:
 ```
 # vcpkg install zeromq:x64-windows
 ```
-According to the [document](https://github.com/Microsoft/vcpkg/blob/master/docs/users/integration.md), invoke cmake with the toolchain file.
+According to the [document](https://github.com/microsoft/vcpkg/blob/master/docs/users/buildsystems/integration.md), invoke cmake with the toolchain file.
 
 - Linux / MacOS: 
 ```
