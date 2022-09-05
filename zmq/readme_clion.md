@@ -1,7 +1,5 @@
 ## CLion Configuration
 
-### Add remote host
-
 - Go to `Setttings` -> `Build, Execution, Deployment` -> `Toolchains`, add a new remote host, fill in SSH credentials.
 - Install recent version of gcc/g++/gdb if necessary, and manually set toolchain path.
 ```shell
@@ -14,5 +12,5 @@
 ```
 idea.case.sensitive.fs=true
 ```
-- If header index are not updated, try to delete: `C:\Users\<user>\AppData\Local\JetBrains\CLion2022.2\.remote\<ip>_<port>\<uuid>\`, and reopen the project. 
+- If header index are not refreshing, try to delete: `C:\Users\<user>\AppData\Local\JetBrains\CLion2022.2\.remote\<ip>_<port>\<uuid>\`, and reload the project. 
 
