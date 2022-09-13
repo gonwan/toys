@@ -1,4 +1,5 @@
 // Tested with boost 1.76
+// ~10w/s, not so fast as expected.
 #define BOOST_DYN_LINK
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
