@@ -25,6 +25,6 @@ git checkout 1.8.0
 git submodule update --init
 mkdir build
 cd build
-cmake .. -DBOOST_INCLUDEDIR=/usr/include/boost169 -DBOOST_LIBRARYDIR=/usr/lib64/boost169
+cmake .. -DBOOST_INCLUDEDIR=/usr/include/boost169 -DBOOST_LIBRARYDIR=/usr/lib64
 make && sudo make install
 ```
