@@ -1,5 +1,5 @@
 // Tested with boost 1.76
-// ~10w/s, not so fast as expected.
+// ~11w/s, not so fast, 4 & 24 io loops give almost same performance.
 #define BOOST_DYN_LINK
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -25,18 +25,17 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 template<
     class Body, class Allocator,
     class Send>
-void
-handle_request(
+void handle_request(
     http::request<Body, http::basic_fields<Allocator>>&& req,
     Send&& send)
 {
-    auto const send_content = [&req](http::status status, const std::string& content_type, beast::string_view content)
+    auto const send_content = [&req](http::status status, const std::string& content_type, const std::string& content)
     {
         http::response<http::string_body> res{ status, req.version() };
-        res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        //res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        //res.keep_alive(req.keep_alive());
         res.set(http::field::content_type, content_type);
-        res.keep_alive(req.keep_alive());
-        res.body() = std::string(content);
+        res.body() = content;
         res.prepare_payload();
         return res;
     };
