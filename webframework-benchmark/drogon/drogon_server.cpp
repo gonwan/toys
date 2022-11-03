@@ -10,7 +10,7 @@ int main()
         [](const HttpRequestPtr &,
            std::function<void(const HttpResponsePtr &)> &&callback) {
             auto resp = HttpResponse::newHttpResponse();
-            resp->setBody("Hello World!");
+            resp->setBody("Hello, World!");
             callback(resp);
         },
         {Get});
@@ -19,7 +19,7 @@ int main()
         [](const HttpRequestPtr &,
            std::function<void(const HttpResponsePtr &)> &&callback) {
             Json::Value json;
-            json["Message"] = "Hello World!";
+            json["Message"] = "Hello, World!";
             auto resp = HttpResponse::newHttpJsonResponse(json);
             callback(resp);
         },

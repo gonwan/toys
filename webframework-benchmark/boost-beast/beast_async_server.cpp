@@ -1,5 +1,5 @@
 // Tested with boost 1.76
-// ~11w/s, not so fast, 4 & 24 io loops give almost same performance.
+// ~11w/s, not so fast, 4 & 24 io loops give almost same performance, almost full 24c cpu ultilize.
 #define BOOST_DYN_LINK
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -191,6 +191,7 @@ private:
     {
         if (ec) {
             fail(ec, "accept");
+            return;
         } else {
             std::make_shared<session>(std::move(socket))->run();
         }

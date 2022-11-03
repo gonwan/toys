@@ -13,6 +13,9 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header()["Date"] = nil
+	})
 	r.GET("/text", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello, World!")
 	})
