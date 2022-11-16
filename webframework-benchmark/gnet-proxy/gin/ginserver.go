@@ -17,10 +17,11 @@ func main() {
 		c.Writer.Header()["Date"] = nil
 	})
 	r.GET("/text", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello, World!")
+		c.Data(http.StatusOK, gin.MIMEPlain, []byte("Hello, World!"))
+		//c.String(http.StatusOK, "Hello, World!")
 	})
 	r.GET("/json", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
+		c.AsciiJSON(http.StatusOK, gin.H{
 			"Message": "Hello, World!",
 		})
 	})
