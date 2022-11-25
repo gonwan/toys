@@ -24,4 +24,9 @@ public class RocksDBController {
         return oldId;
     }
 
+    @GetMapping("/ttltest")
+    public void ttltest() {
+        idRepository.ttltest();
+    }
+
 }

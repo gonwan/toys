@@ -71,6 +71,7 @@ public class SpringConfiguration {
             tableConfig.setBlockSize(16384); /* 16k */
             options.setTableFormatConfig(tableConfig);
         }
+        options.setMergeOperator(new StringAppendOperator(','));
         File dbDir = new File(config.getRocksdbDirectory());
         try {
             Files.createDirectories(dbDir.getAbsoluteFile().toPath());
