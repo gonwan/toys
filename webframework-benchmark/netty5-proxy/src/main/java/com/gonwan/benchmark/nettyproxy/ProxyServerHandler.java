@@ -84,6 +84,16 @@ public class ProxyServerHandler extends ChannelHandlerAdapter {
     }
 
     @Override
+    public void channelInboundEvent(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.channelInboundEvent(ctx, evt);
+    }
+
+    @Override
+    public void channelExceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        super.channelExceptionCaught(ctx, cause);
+    }
+
+    @Override
     public boolean isSharable() {
         return true;
     }

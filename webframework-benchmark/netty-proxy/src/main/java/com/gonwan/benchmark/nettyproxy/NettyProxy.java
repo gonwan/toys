@@ -23,7 +23,7 @@ public class NettyProxy {
 
     public static final int PORT = 8091;
 
-    public static final List<Tuple2<String, Integer>> UPSTREAM  = Arrays.asList(
+    public static final List<Tuple2<String, Integer>> UPSTREAM = Arrays.asList(
             //Tuples.of("www.baidu.com", 80)
             Tuples.of("10.188.10.75", 8099),
             Tuples.of("10.188.10.76", 8099),
