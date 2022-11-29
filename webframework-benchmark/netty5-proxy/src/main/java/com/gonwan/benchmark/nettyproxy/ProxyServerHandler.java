@@ -1,17 +1,18 @@
 package com.gonwan.benchmark.nettyproxy;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.flush.FlushConsolidationHandler;
-import io.netty.util.AttributeKey;
+import io.netty5.bootstrap.Bootstrap;
+import io.netty5.channel.*;
+import io.netty5.channel.socket.SocketChannel;
+import io.netty5.handler.flush.FlushConsolidationHandler;
+import io.netty5.util.AttributeKey;
+import io.netty5.util.concurrent.Future;
+import io.netty5.util.concurrent.FutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-@ChannelHandler.Sharable
-public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
+public class ProxyServerHandler extends ChannelHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyServerHandler.class);
 
@@ -28,7 +29,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Channel clientChannel = ctx.channel();
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(ctx.channel().eventLoop())
+        bootstrap.group(ctx.channel().executor())
                 .channel(ctx.channel().getClass())
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -43,15 +44,15 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                     }
                 });
         int idx = (Math.abs(index.getAndIncrement())) % (NettyProxy.UPSTREAM.size()); /* index wraps */
-        ChannelFuture channelFuture = bootstrap.connect(NettyProxy.UPSTREAM.get(idx).getT1(), NettyProxy.UPSTREAM.get(idx).getT2());
-        channelFuture.addListener(new ChannelFutureListener() {
+        Future<Channel> channelFuture = bootstrap.connect(NettyProxy.UPSTREAM.get(idx).getT1(), NettyProxy.UPSTREAM.get(idx).getT2());
+        channelFuture.addListener(new FutureListener<Channel>() {
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
+            public void operationComplete(Future<? extends Channel> future) throws Exception {
                 if (future.isSuccess()) {
-                    ctx.channel().attr(UPSTREAM_KEY).set(channelFuture.channel());
+                    ctx.channel().attr(UPSTREAM_KEY).set(channelFuture.getNow());
                     /* start to read */
                     ctx.read();
-                    ctx.channel().config().setOption(ChannelOption.AUTO_READ, true);
+                    ctx.channel().setOption(ChannelOption.AUTO_READ, true);
                 } else {
                     ctx.close();
                 }
@@ -71,9 +72,9 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel upstreamChannel = ctx.channel().attr(UPSTREAM_KEY).get();
-        upstreamChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
+        upstreamChannel.writeAndFlush(msg).addListener(new FutureListener<Void>() {
             @Override
-            public void operationComplete(ChannelFuture future) throws InterruptedException {
+            public void operationComplete(Future<? extends Void> future) throws InterruptedException {
                 if (!future.isSuccess()) {
                     ctx.close();
                     upstreamChannel.close();
@@ -83,13 +84,8 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        super.userEventTriggered(ctx, evt);
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
+    public boolean isSharable() {
+        return true;
     }
 
 }

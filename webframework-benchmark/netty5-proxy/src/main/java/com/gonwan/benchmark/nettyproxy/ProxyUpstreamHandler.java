@@ -1,10 +1,12 @@
 package com.gonwan.benchmark.nettyproxy;
 
-import io.netty.channel.*;
+import io.netty5.channel.*;
+import io.netty5.util.concurrent.Future;
+import io.netty5.util.concurrent.FutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProxyUpstreamHandler extends ChannelInboundHandlerAdapter {
+public class ProxyUpstreamHandler extends ChannelHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyUpstreamHandler.class);
 
@@ -26,25 +28,15 @@ public class ProxyUpstreamHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        clientChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
+        clientChannel.writeAndFlush(msg).addListener(new FutureListener<Void>() {
             @Override
-            public void operationComplete(ChannelFuture future) throws InterruptedException {
+            public void operationComplete(Future<? extends Void> future) throws InterruptedException {
                 if (!future.isSuccess()) {
                     ctx.close();
                     clientChannel.close();
                 }
             }
         });
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        super.userEventTriggered(ctx, evt);
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
     }
 
 }
