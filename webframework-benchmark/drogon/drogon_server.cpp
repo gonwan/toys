@@ -15,8 +15,8 @@ std::shared_ptr<connection_pool> init_connection_pool(size_t size = 5) {
     std::shared_ptr<connection_pool> p = std::make_shared<connection_pool>(size);
     for (int i = 0; i < size; i++) {
         session &sql = p->at(i);
-        sql.open("mysql://host=10.228.131.133 user=root password='1qaz@WSX' db=mysql charset=utf8 reconnect=1");
-        sql << "SET time_zone = '+08:00'"; /* Asia/Shanghai */
+        sql.open("mysql://host=127.0.0.1 user=root password='123456' db=mysql charset=utf8 reconnect=1");
+        sql << "set time_zone = '+08:00'"; /* Asia/Shanghai */
 //        string tz;
 //        sql << "select @@session.time_zone", into(tz);
 //        cout << "i=" << i << ", tz=" << tz << endl;
@@ -90,8 +90,7 @@ int main()
             for (auto it = rs.begin(); it != rs.end(); ++it) {
                 std::tm t = it->get<std::tm>(3);
                 char str[32] = { 0 };
-                snprintf(str, sizeof(str), "%04d-%02d-%02d %02d:%02d:%02d",
-                         t.tm_year+1900, t.tm_mon+1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+                std::strftime(str, sizeof(str), "%Y-%m-%d %H:%M:%S", &t);
                 Json::Value v;
                 v["user"] = it->get<string>(0);
                 v["host"] = it->get<string>(1);

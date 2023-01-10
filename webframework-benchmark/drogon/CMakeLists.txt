@@ -12,5 +12,4 @@ add_executable(${PROJECT_NAME} main.cpp)
 # vcpkg install drogon --triplet=x64-linux-dynamic
 # cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
 target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon)
-target_link_libraries(${PROJECT_NAME} PRIVATE SOCI::soci_core SOCI::soci_empty SOCI::soci_mysql)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${MYSQL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE SOCI::soci_core SOCI::soci_mysql)
