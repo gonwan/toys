@@ -52,6 +52,28 @@ int main()
         },
         {Get});
     app().registerHandler(
+        "/proxy",
+        [](const HttpRequestPtr &req,
+           std::function<void(const HttpResponsePtr &)> &&callback) {
+            auto client = HttpClient::newHttpClient("http://www.baidu.com");
+            auto creq = HttpRequest::newHttpRequest();
+            creq->setMethod(drogon::Get);
+            creq->setPassThrough(true);
+            client->sendRequest(creq, [req, callback](ReqResult result, const HttpResponsePtr &response) {
+                if (result != ReqResult::Ok) {
+                    Json::Value json;
+                    json["Code"] = 999;
+                    json["Message"] = "Error";
+                    auto resp = HttpResponse::newHttpJsonResponse(json);
+                    callback(resp);
+                    return;
+                }
+                response->setPassThrough(true);
+                callback(response);
+            }, 2.0);
+        },
+        {Get});
+    app().registerHandler(
         "/sse",
         [](const HttpRequestPtr &,
            std::function<void(const HttpResponsePtr &)> &&callback) {
@@ -80,31 +102,9 @@ int main()
         },
         {Get});
     app().registerHandler(
-        "/proxy",
-        [](const HttpRequestPtr &req,
-           std::function<void(const HttpResponsePtr &)> &&callback) {
-            auto client = HttpClient::newHttpClient("http://www.baidu.com");
-            auto creq = HttpRequest::newHttpRequest();
-            creq->setMethod(drogon::Get);
-            creq->setPassThrough(true);
-            client->sendRequest(creq, [req, callback](ReqResult result, const HttpResponsePtr &response) {
-                if (result != ReqResult::Ok) {
-                    Json::Value json;
-                    json["Code"] = 999;
-                    json["Message"] = "Error";
-                    auto resp = HttpResponse::newHttpJsonResponse(json);
-                    callback(resp);
-                    return;
-                }
-                response->setPassThrough(true);
-                callback(response);
-            }, 2.0);
-        },
-        {Get});
-    app().registerHandler(
         "/db",
         [&thread_pool, &conn_pool](const HttpRequestPtr &req,
-                std::function<void(const HttpResponsePtr &)> &&callback) {
+           std::function<void(const HttpResponsePtr &)> &&callback) {
             boost::asio::post(thread_pool, [req, callback, &conn_pool]() {
                 session sql(*conn_pool);
                 //statement st = (sql.prepare << "select user, host, password_expired, password_last_changed from user");
@@ -121,7 +121,7 @@ int main()
                     v["password_last_changed"] = str;
                     json.append(v);
                 }
-                cout << "thread=" << this_thread::get_id() << endl;
+                //cout << "thread=" << this_thread::get_id() << endl;
                 auto resp = HttpResponse::newHttpJsonResponse(json);
                 callback(resp);
             });
