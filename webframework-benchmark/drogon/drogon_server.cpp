@@ -80,26 +80,30 @@ int main()
         },
         {Get});
     app().registerHandler(
-            "/db",
-            [&conn_pool](const HttpRequestPtr &,
+        "/db",
+        [&thread_pool, &conn_pool](const HttpRequestPtr &req,
                 std::function<void(const HttpResponsePtr &)> &&callback) {
-            session sql(*conn_pool);
-            //statement st = (sql.prepare << "select user, host, password_expired, password_last_changed from user");
-            rowset<row> rs = (sql.prepare << "select user, host, password_expired, password_last_changed from user");
-            Json::Value json;
-            for (auto it = rs.begin(); it != rs.end(); ++it) {
-                std::tm t = it->get<std::tm>(3);
-                char str[32] = { 0 };
-                std::strftime(str, sizeof(str), "%Y-%m-%d %H:%M:%S", &t);
-                Json::Value v;
-                v["user"] = it->get<string>(0);
-                v["host"] = it->get<string>(1);
-                v["password_expired"] = it->get<string>(2);
-                v["password_last_changed"] = str;
-                json.append(v);
-            }
-            auto resp = HttpResponse::newHttpJsonResponse(json);
-            callback(resp);
+            boost::asio::post(thread_pool, [req, callback, &conn_pool]() {
+                session sql(*conn_pool);
+                //statement st = (sql.prepare << "select user, host, password_expired, password_last_changed from user");
+                rowset<row> rs = (sql.prepare
+                        << "select user, host, password_expired, password_last_changed from user");
+                Json::Value json;
+                for (auto it = rs.begin(); it != rs.end(); ++it) {
+                    std::tm t = it->get<std::tm>(3);
+                    char str[32] = {0};
+                    std::strftime(str, sizeof(str), "%Y-%m-%d %H:%M:%S", &t);
+                    Json::Value v;
+                    v["user"] = it->get<string>(0);
+                    v["host"] = it->get<string>(1);
+                    v["password_expired"] = it->get<string>(2);
+                    v["password_last_changed"] = str;
+                    json.append(v);
+                }
+                cout << "thread=" << this_thread::get_id() << endl;
+                auto resp = HttpResponse::newHttpJsonResponse(json);
+                callback(resp);
+            });
         },
         {Get});
     LOG_INFO << "Server running on 0.0.0.0:8099";
