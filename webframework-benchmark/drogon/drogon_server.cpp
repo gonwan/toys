@@ -51,7 +51,7 @@ std::shared_ptr<apr_thread_pool_t> init_thread_pool(size_t init = 10, size_t max
     }
     return std::shared_ptr<apr_thread_pool_t>(
             thread_pool,
-            [pool](apr_thread_pool_t *tp){
+            [pool](apr_thread_pool_t *tp) {
                 apr_thread_pool_destroy(tp);
                 apr_pool_destroy(pool);
             });
