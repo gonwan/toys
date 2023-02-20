@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.20)
+#project(libb)
+set(CMAKE_CXX_COMPILER /opt/rh/devtoolset-7/root/usr/bin/g++)
+set(CMAKE_CXX_STANDARD 11)
+add_library(b SHARED B.cpp)
