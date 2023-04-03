@@ -10,8 +10,10 @@
 1. Working with JPA.
 2. Status: not actively maintained?
 3. Supports `insert into... on duplicate key update...`, requires separate DTO(non-JPA) generation.
+4. Join statements support via tuple return type.
 
 ### MyBatis Dynamic SQL
 1. Not working with JPA.
 2. Status: actively maintained, but not so mature?
 3. Does not support `insert into... on duplicate key update...` and other database dependent features.
+4. Join statements require XML mappers.

@@ -3,6 +3,7 @@ package com.gonwan.toys.querydsl;
 import com.gonwan.toys.querydsl.model.generated.*;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.dml.SQLInsertClause;
 import com.querydsl.sql.mysql.MySQLQueryFactory;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class QueryDslRunner implements CommandLineRunner {
@@ -51,7 +53,8 @@ public class QueryDslRunner implements CommandLineRunner {
             tUser.setUpdateTime(new Timestamp(System.currentTimeMillis()));
             insertClause.populate(tUser).addBatch();
         }
-        insertClause.execute();
+        List<Long> ids = insertClause.executeWithKeys(stUser.id);
+        logger.info("ids: {}", ids);
     }
 
     @Transactional
@@ -99,23 +102,31 @@ public class QueryDslRunner implements CommandLineRunner {
         tUser.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         mySQLQueryFactory.insert(stUser).populate(tUser).execute();
         /* replace */
-        mySQLQueryFactory.replace(stUser)
-                .set(stUser.id, 2L)
-                .set(stUser.username, "username_200")
-                .set(stUser.password, "password_200")
-                .set(stUser.createTime, Timestamp.valueOf(LocalDateTime.now()))
-                .set(stUser.updateTime, new Timestamp(System.currentTimeMillis()))
-                .execute();
+        SQLInsertClause insertClause = mySQLQueryFactory.replace(stUser);
+        for (int i = 2; i <= 3; i++) {
+            insertClause.set(stUser.id, (long) i)
+                    .set(stUser.username, "username_" + i*100)
+                    .set(stUser.password, "password_" + i*100)
+                    .set(stUser.createTime, Timestamp.valueOf(LocalDateTime.now()))
+                    .set(stUser.updateTime, new Timestamp(System.currentTimeMillis()))
+                    .addBatch();
+        }
+        List<Long> replaceIds = insertClause.executeWithKeys(stUser.id);
+        logger.info("replaceIds: {}", replaceIds); /* [2,3,3,4] */
         /* on duplicate update */
-        mySQLQueryFactory.insertOnDuplicateKeyUpdate(stUser,
-                        stUser.username.eq("username_300"),
-                        stUser.password.eq("password_300"))
-                .set(stUser.id, 3L)
-                .set(stUser.username, "username_300")
-                .set(stUser.password, "password_300")
-                .set(stUser.createTime, Timestamp.valueOf(LocalDateTime.now()))
-                .set(stUser.updateTime, new Timestamp(System.currentTimeMillis()))
-                .execute();
+        SQLInsertClause insertClause2 = mySQLQueryFactory.insertOnDuplicateKeyUpdate(stUser,
+                        SQLExpressions.set(stUser.username, stUser.username),
+                        SQLExpressions.set(stUser.password, stUser.password));
+        for (int i = 4; i <= 5; i++) {
+            insertClause2.set(stUser.id, (long) i)
+                    .set(stUser.username, "username_" + i*100)
+                    .set(stUser.password, "password_" + i*100)
+                    .set(stUser.createTime, Timestamp.valueOf(LocalDateTime.now()))
+                    .set(stUser.updateTime, new Timestamp(System.currentTimeMillis()))
+                    .addBatch();
+        }
+        List<Long> duplicateIds = insertClause2.executeWithKeys(stUser.id);
+        logger.info("duplicateIds: {}", duplicateIds);
     }
 
 }
