@@ -27,6 +27,15 @@ public class QueryDslRunner implements CommandLineRunner {
     @Autowired
     private MySQLQueryFactory mySQLQueryFactory;
 
+    @Override
+    public void run(String... args) throws Exception {
+        QueryDslRunner querydslRunner = appContext.getBean(QueryDslRunner.class);
+        querydslRunner.init();
+        //querydslRunner.test1();
+        //querydslRunner.test2();
+        querydslRunner.test3();
+    }
+
     @Transactional
     public void init() {
         STUser stUser = STUser.tUser;
@@ -45,24 +54,15 @@ public class QueryDslRunner implements CommandLineRunner {
         insertClause.execute();
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        QueryDslRunner querydslRunner = appContext.getBean(QueryDslRunner.class);
-        querydslRunner.init();
-        //querydslRunner.test1();
-        //querydslRunner.test2();
-        querydslRunner.test3();
-    }
-
     @Transactional
     public void test1() {
         logger.info("--- running test1 ---");
         STUser stUser = STUser.tUser;
-        TUser tUsers1 = mySQLQueryFactory.selectFrom(stUser)
+        TUser tUser1 = mySQLQueryFactory.selectFrom(stUser)
                 .where(stUser.username.eq("username_1"))
                 .fetchFirst();
-        if (tUsers1 != null) {
-            logger.info("users1: username={} password={}", tUsers1.getUsername(), tUsers1.getPassword());
+        if (tUser1 != null) {
+            logger.info("users1: username={} password={}", tUser1.getUsername(), tUser1.getPassword());
         }
         mySQLQueryFactory.update(stUser)
                 .where(stUser.username.eq("username_4"))
