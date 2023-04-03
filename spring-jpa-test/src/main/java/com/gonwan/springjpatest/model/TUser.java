@@ -5,6 +5,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
@@ -18,7 +19,7 @@ public class TUser {
     private String username;
     private String password;
     private Long version;
-    private Timestamp createTime;
+    private Date createTime;
     private Timestamp updateTime;
 
     @Id
@@ -66,11 +67,11 @@ public class TUser {
     @CreatedDate
     @Basic
     @Column(name = "create_time", nullable = false, updatable = false)
-    public Timestamp getCreateTime() {
+    public Date getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Timestamp createTime) {
+    public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
 

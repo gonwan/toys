@@ -8,7 +8,7 @@ CREATE TABLE `t_user` (
   `password` varchar(50) DEFAULT NULL,
   `version` bigint(20) DEFAULT NULL,
   `create_time` datetime(6) NOT NULL,
-  `update_time` datetime(6) NOT NULL,
+  `update_time` timestamp(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
