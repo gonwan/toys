@@ -1,5 +1,6 @@
-package com.gonwan.springjpatest.model;
+package com.gonwan.springjpatest.repository;
 
+import com.gonwan.springjpatest.model.TUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;

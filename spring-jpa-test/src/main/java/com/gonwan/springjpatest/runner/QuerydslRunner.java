@@ -1,6 +1,7 @@
 package com.gonwan.springjpatest.runner;
 
 import com.gonwan.springjpatest.model.*;
+import com.gonwan.springjpatest.repository.TUserRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
