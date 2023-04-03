@@ -1,0 +1,21 @@
+*.o
+*.class
+*.jar
+*.war
+*.ear
+
+# maven
+target
+
+# eclipse
+*.project
+*.classpath
+*.settings
+
+# idea
+.idea
+*.iml
+
+# logs
+*.log*
+*.err
