@@ -6,19 +6,19 @@ import org.mybatis.dynamic.sql.AliasableSqlTable;
 import org.mybatis.dynamic.sql.SqlColumn;
 
 public final class TUser2DynamicSqlSupport {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-04-03T20:24:40.933+08:00", comments="Source Table: t_user2")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: t_user2")
     public static final TUser2 TUser2 = new TUser2();
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-04-03T20:24:40.934+08:00", comments="Source field: t_user2.id")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: t_user2.id")
     public static final SqlColumn<Long> id = TUser2.id;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-04-03T20:24:40.934+08:00", comments="Source field: t_user2.username")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: t_user2.username")
     public static final SqlColumn<String> username = TUser2.username;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-04-03T20:24:40.934+08:00", comments="Source field: t_user2.password")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: t_user2.password")
     public static final SqlColumn<String> password = TUser2.password;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2023-04-03T20:24:40.933+08:00", comments="Source Table: t_user2")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: t_user2")
     public static final class TUser2 extends AliasableSqlTable<TUser2> {
         public final SqlColumn<Long> id = column("id", JDBCType.BIGINT);
 

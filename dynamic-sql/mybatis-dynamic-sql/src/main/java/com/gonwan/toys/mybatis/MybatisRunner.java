@@ -66,7 +66,7 @@ public class MybatisRunner implements CommandLineRunner {
              * MultiRowInsertStatementProvider requires manual mapping.
              * see: https://mybatis.org/mybatis-dynamic-sql/docs/insert.html
              */
-            mapper.insertMultiple(users);
+            mapper.insertMultiple(users); /* ids are filled */
         }
     }
 
@@ -83,7 +83,7 @@ public class MybatisRunner implements CommandLineRunner {
                     .render(RenderingStrategies.MYBATIS3);
             TUser user1 = mapper.selectOne(ssProvider).orElse(null);
             if (user1 != null) {
-                logger.info("users1: username={} password={}", user1.getUsername(), user1.getPassword());
+                logger.info("user1: username={} password={}", user1.getUsername(), user1.getPassword());
             }
             UpdateStatementProvider usProvider = SqlBuilder.update(tUser)
                     .set(tUser.password).equalTo("password_444")
@@ -109,7 +109,7 @@ public class MybatisRunner implements CommandLineRunner {
             /* cannot return tuple, as in querydsl. */
             TUser2 user2 = mapper.selectOne(ssProvider).orElse(null);
             if (user2 != null) {
-                logger.info("tuser2={}", user2.getUsername());
+                logger.info("user2={}", user2.getUsername());
             }
         }
     }

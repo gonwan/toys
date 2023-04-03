@@ -5,7 +5,8 @@
 <generatorConfiguration>
     <context id="context1" targetRuntime="MyBatis3DynamicSQL">
         <commentGenerator>
-            <property name="useLegacyGeneratedAnnotation" value="true" />
+            <property name="suppressDate" value="true"/>
+            <property name="useLegacyGeneratedAnnotation" value="true"/>
         </commentGenerator>
         <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
                         connectionURL="jdbc:mysql://192.168.127.128:3306/sc_database?useUnicode=true&amp;characterEncoding=UTF-8"
@@ -15,8 +16,14 @@
         <javaTypeResolver/>
         <javaModelGenerator targetPackage="com.gonwan.toys.mybatis.model" targetProject="src/main/java"/>
         <javaClientGenerator targetPackage="com.gonwan.toys.mybatis.mapper" targetProject="src/main/java"/>
-        <table tableName="t_user"/>
-        <table tableName="t_user2"/>
-        <table tableName="t_user3"/>
+        <table tableName="t_user">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true" type="post"/>
+        </table>
+        <table tableName="t_user2">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true" type="post"/>
+        </table>
+        <table tableName="t_user3">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true" type="post"/>
+        </table>
     </context>
 </generatorConfiguration>
