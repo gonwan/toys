@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +112,7 @@ public class QuerydslRunner implements CommandLineRunner {
         TUser tUser = new TUser();
         tUser.setUsername("username_100");
         tUser.setPassword("password_100");
-        tUser.setCreateTime(new Timestamp(System.currentTimeMillis()));
+        tUser.setCreateTime(new Date(System.currentTimeMillis()));
         tUser.setUpdateTime(new Timestamp(System.currentTimeMillis()));
         mySQLQueryFactory.insert(stUser).populate(tUser).execute();
         /* replace */
