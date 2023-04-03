@@ -101,7 +101,14 @@ public class MybatisRunner implements CommandLineRunner {
             TUser2DynamicSqlSupport.TUser2 tUser2 = TUser2DynamicSqlSupport.TUser2;
             TUser3DynamicSqlSupport.TUser3 tUser3 = TUser3DynamicSqlSupport.TUser3;
             TUser2Mapper mapper = session.getMapper(TUser2Mapper.class);
-            SelectStatementProvider ssProvider = SqlBuilder.select(tUser2.allColumns(), tUser3.id, tUser3.username)
+            /*
+             * 1. alias required, or jdbc cannot distinguish between same column names
+             * 2. add a property to TUser2 with type of TUser3.
+             * 3. add an XML mapper: TUser2Mapper.xml.
+             * 4. modify TUser2Mapper class to use `TUser2JoinResult` result map.
+             * 5. see: https://mybatis.org/mybatis-dynamic-sql/docs/select.html
+             */
+            SelectStatementProvider ssProvider = SqlBuilder.select(tUser2.allColumns(), tUser3.id.as("id3"), tUser3.username.as("username3"))
                     .from(tUser2)
                     .join(tUser3).on(tUser2.id, SqlBuilder.equalTo(tUser3.id))
                     .build()
