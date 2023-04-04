@@ -94,6 +94,8 @@ public class QueryDslRunner implements CommandLineRunner {
     public void test3() {
         logger.info("--- running test3 ---");
         STUser stUser = STUser.tUser;
+        /* sql rewrite with another table name */
+        //STUser stUser = new STUser("t_user", "null", "t_user00");
         /* populate */
         TUser tUser = new TUser();
         tUser.setUsername("username_100");

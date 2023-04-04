@@ -75,6 +75,8 @@ public class MybatisRunner implements CommandLineRunner {
         logger.info("--- running test1 ---");
         try (SqlSession session = sqlSessionFactory.openSession()) {
             TUserDynamicSqlSupport.TUser tUser = TUserDynamicSqlSupport.TUser;
+            /* sql rewrite with another table name, seems not possible... */
+            //TUserDynamicSqlSupport.TUser tUser = new TUserDynamicSqlSupport.TUser("t_user00", TUserDynamicSqlSupport.TUser::new);
             TUserMapper mapper = session.getMapper(TUserMapper.class);
             SelectStatementProvider ssProvider = SqlBuilder.select(tUser.allColumns())
                     .from(tUser)
