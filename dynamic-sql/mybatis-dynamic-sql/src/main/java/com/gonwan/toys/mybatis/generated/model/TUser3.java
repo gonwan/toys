@@ -1,4 +1,4 @@
-package com.gonwan.toys.mybatis.model;
+package com.gonwan.toys.mybatis.generated.model;
 
 import javax.annotation.Generated;
 

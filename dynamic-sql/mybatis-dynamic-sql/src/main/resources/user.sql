@@ -27,5 +27,5 @@ CREATE TABLE `t_user3` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `t_user`(`id`, `username`, `password`, `version`, `create_time`, `update_time`) VALUES (1, 'uaaa', 'paaa', 1, '2020-01-01', '2020-01-01');
-INSERT INTO `t_user2`(`id`, `username`, `password`) VALUES (1, 'uaaa2', 'paaa2');
-INSERT INTO `t_user3`(`id`, `username`, `password`) VALUES (1, 'uaaa3', 'paaa3');
+INSERT INTO `t_user2`(`id`, `username`, `password`) VALUES (1, 'uaaa2', 'paaa2'), (2, 'uaaa22', 'paaa22');
+INSERT INTO `t_user3`(`id`, `username`, `password`) VALUES (1, 'uaaa3', 'paaa3'), (2, 'uaaa32', 'paaa32');

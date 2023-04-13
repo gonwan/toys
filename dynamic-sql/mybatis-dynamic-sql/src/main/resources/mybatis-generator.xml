@@ -14,8 +14,8 @@
                         password="sc_passw0rd">
         </jdbcConnection>
         <javaTypeResolver/>
-        <javaModelGenerator targetPackage="com.gonwan.toys.mybatis.model" targetProject="src/main/java"/>
-        <javaClientGenerator targetPackage="com.gonwan.toys.mybatis.mapper" targetProject="src/main/java"/>
+        <javaModelGenerator targetPackage="com.gonwan.toys.mybatis.generated.model" targetProject="src/main/java"/>
+        <javaClientGenerator targetPackage="com.gonwan.toys.mybatis.generated.mapper" targetProject="src/main/java"/>
         <table tableName="t_user">
             <generatedKey column="id" sqlStatement="JDBC" identity="true" type="post"/>
         </table>

@@ -1,9 +1,9 @@
-package com.gonwan.toys.mybatis.mapper;
+package com.gonwan.toys.mybatis.generated.mapper;
 
-import static com.gonwan.toys.mybatis.mapper.TUser2DynamicSqlSupport.*;
+import static com.gonwan.toys.mybatis.generated.mapper.TUser2DynamicSqlSupport.*;
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 
-import com.gonwan.toys.mybatis.model.TUser2;
+import com.gonwan.toys.mybatis.generated.model.TUser2;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

@@ -1,8 +1,12 @@
 package com.gonwan.toys.mybatis;
 
-import com.gonwan.toys.mybatis.mapper.*;
-import com.gonwan.toys.mybatis.model.TUser;
-import com.gonwan.toys.mybatis.model.TUser2;
+import com.gonwan.toys.mybatis.generated.mapper.TUser2DynamicSqlSupport;
+import com.gonwan.toys.mybatis.generated.mapper.TUser3DynamicSqlSupport;
+import com.gonwan.toys.mybatis.generated.mapper.TUserDynamicSqlSupport;
+import com.gonwan.toys.mybatis.generated.mapper.TUserMapper;
+import com.gonwan.toys.mybatis.generated.model.TUser;
+import com.gonwan.toys.mybatis.mapper.TUser2ExMapper;
+import com.gonwan.toys.mybatis.model.TUser2Ex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.dynamic.sql.SqlBuilder;
@@ -102,12 +106,12 @@ public class MybatisRunner implements CommandLineRunner {
         try (SqlSession session = sqlSessionFactory.openSession()) {
             TUser2DynamicSqlSupport.TUser2 tUser2 = TUser2DynamicSqlSupport.TUser2;
             TUser3DynamicSqlSupport.TUser3 tUser3 = TUser3DynamicSqlSupport.TUser3;
-            TUser2Mapper mapper = session.getMapper(TUser2Mapper.class);
+            TUser2ExMapper mapper = session.getMapper(TUser2ExMapper.class);
             /*
              * 1. alias required, or jdbc cannot distinguish between same column names.
              * 2. add an XML mapper: TUser2Mapper.xml.
              * 3. add a property to TUser2 with type of TUser3.
-             * 4. modify TUser2Mapper class to use `TUser2JoinResult` result map.
+             * 4. modify TUser2Mapper class to use `TUser2JoinResult` result map. select one and select many supported.
              * 5. see: https://mybatis.org/mybatis-dynamic-sql/docs/select.html
              */
             SelectStatementProvider ssProvider = SqlBuilder.select(tUser2.allColumns(), tUser3.id.as("id3"), tUser3.username.as("username3"))
@@ -116,9 +120,11 @@ public class MybatisRunner implements CommandLineRunner {
                     .build()
                     .render(RenderingStrategies.MYBATIS3);
             /* cannot return tuple, as in querydsl. */
-            TUser2 user2 = mapper.selectOne(ssProvider).orElse(null);
-            if (user2 != null) {
-                logger.info("user2={}", user2.getUsername());
+            List<TUser2Ex> users2 = mapper.selectManyJoin(ssProvider);
+            if (users2 != null) {
+                for (TUser2Ex u : users2) {
+                    logger.info("user2={} user3={}", u.getUsername(), (u.gettUser3() == null) ? null : u.gettUser3().getUsername());
+                }
             }
         }
     }

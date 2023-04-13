@@ -1,4 +1,4 @@
-package com.gonwan.toys.mybatis.mapper;
+package com.gonwan.toys.mybatis.generated.mapper;
 
 import java.sql.JDBCType;
 import java.util.Date;
