@@ -4,11 +4,11 @@ using namespace std;
 using namespace boost::interprocess;
 
 int main() {
-    try{
+    try {
         message_queue mq(open_only, "message_queue");
         unsigned int priority;
         message_queue::size_type recv_size;
-        for(int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++) {
             int number;
             mq.receive(&number, sizeof(int), recv_size, priority);
             cout << "recv: " << i << endl;
