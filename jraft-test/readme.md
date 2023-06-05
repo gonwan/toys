@@ -6,3 +6,4 @@
 - Call graph: `IncrementAndGetRequestProcessor#handleRequest()` --> `CounterServiceImpl#incrementAndGet()` --> `CounterServiceImpl#applyOperation()` --> `CounterStateMachine#apply()`. 
 - Run `mvn clean compile assembly:single` to package.
 - Run using IDEA: create 3 server configurations and 1 client configuration.
+- Async invoke is ~10x faster than Sync invoke.

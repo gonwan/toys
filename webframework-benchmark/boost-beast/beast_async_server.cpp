@@ -34,7 +34,7 @@ handle_request(
         //res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
         //res.keep_alive(req.keep_alive());
         res.set(http::field::content_type, content_type);
-        res.body() = std::string(content);
+        res.body() = content;
         res.prepare_payload();
         return res;
     };
@@ -145,8 +145,7 @@ public:
             return fail(ec, "write");
         }
 
-        if (!keep_alive)
-        {
+        if (!keep_alive) {
             // This means we should close the connection, usually because
             // the response indicated the "Connection: close" semantic.
             return do_close();
@@ -274,7 +273,7 @@ int main(int argc, char* argv[])
         {
             ioc.run();
         });
-	}
+    }
     ioc.run();
 
     return EXIT_SUCCESS;
