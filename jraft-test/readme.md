@@ -13,7 +13,7 @@
   - Leader replicator: `NodeImpl#becomeLeader()` --> `ReplicatorGroup#addReplicator()` --> `Replicator#start()` --> `Replicator#sendEmptyEntries()` --> `RaftClientService#installSnapshot()` or `RaftClientService#appendEntries()`.
   - Follower replicator: `AppendEntriesRequestProcessor` & `InstallSnapshotRequestProcessor`. `CopySession` for remote snapshot file copying.
   - A probe request is `AppendEntriesRequest` with 0 entries to send back `last_log_index`, see `NodeImpl#handleAppendEntriesRequest()`.
-  - Servers take local snapshots independently, with fixed interval(3600s) by default.
+  - Servers take local snapshots independently, with fixed interval(3600s) by default. Disable it by setting `NodeOptions#snapshotIntervalSecs` <= 0. Run snapshot manually by calling `Node#snapshot()`, maybe using a cron scheduler.
   - Troubleshooting: `kill -s SIGUSR2 pid`, gives `node_metrics.log`, `node_describe.log` & `thread_pool_metrics.log`.
 ```
 2023-06-06 11:28:16.824 [INFO] [NodeImpl] - Node <counter/127.0.0.1:8083> received InstallSnapshotRequest from 127.0.0.1:8081, lastIncludedLogIndex=100451, lastIncludedLogTerm=12, lastLogId=LogId [index=0, term=0].
