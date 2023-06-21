@@ -19,3 +19,9 @@ Content-Type: application/json
   "id": "c86faf96-0fd4-11ee-9d30-0242c9a64bab",
   "status": true
 }
+
+###
+GET http://localhost:8080/history/list
+
+###
+GET http://localhost:8080/history/get?id=f04a5261-0fd4-11ee-a4fb-0242c9a64bab

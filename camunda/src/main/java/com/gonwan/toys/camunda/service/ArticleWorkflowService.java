@@ -2,8 +2,11 @@ package com.gonwan.toys.camunda.service;
 
 import com.gonwan.toys.camunda.domain.Approval;
 import com.gonwan.toys.camunda.domain.Article;
+import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.history.HistoricActivityInstance;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +22,12 @@ public class ArticleWorkflowService {
 
     @Autowired
     private RuntimeService runtimeService;
+
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private HistoryService historyService;
 
     @Transactional
     public void startProcess(Article article) {
@@ -50,6 +57,20 @@ public class ArticleWorkflowService {
         Map<String, Object> variables = new HashMap<>();
         variables.put("approved", approval.isStatus());
         taskService.complete(approval.getId(), variables);
+    }
+
+    @Transactional
+    public List<HistoricProcessInstance> historyList() {
+        return historyService.createHistoricProcessInstanceQuery()
+                .completed()
+                .list();
+    }
+
+    @Transactional
+    public List<HistoricActivityInstance> historyDetail(String processInstanceId) {
+         return historyService.createHistoricActivityInstanceQuery()
+                 .processInstanceId(processInstanceId)
+                 .list();
     }
 
 }
