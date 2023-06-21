@@ -1,0 +1,21 @@
+###
+POST http://localhost:8080/submit
+Content-Type: application/json
+
+{
+  "id": "111",
+  "author": "gonwan",
+  "url": "http://gonwan.com/111"
+}
+
+###
+GET http://localhost:8080/tasks?assignee=editors
+
+###
+POST http://localhost:8080/review
+Content-Type: application/json
+
+{
+  "id": "c86faf96-0fd4-11ee-9d30-0242c9a64bab",
+  "status": true
+}
