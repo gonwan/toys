@@ -38,7 +38,12 @@ public class ArticleWorkflowController {
 
     @GetMapping("/history/get")
     public List<HistoricActivityInstance> historyGet(String id) {
-        return service.historyDetail(id);
+        return service.historyGet(id);
+    }
+
+    @GetMapping("/definition/get")
+    public List<String> definitionGet(String id) {
+        return service.definitionGet(id);
     }
 
 }
