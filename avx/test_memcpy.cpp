@@ -1,7 +1,6 @@
 /* g++ -std=c++14 -O2 -mavx test_memcpy.cpp -o test_memcpy */
 /* cl -nologo -arch:AVX -O2 test_memcpy.cpp */
 #include <immintrin.h>
-#include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
 #include <chrono>
@@ -17,7 +16,7 @@ void *memcpy_fast512(void *dst, const void *src, size_t n) {
     const unsigned char *s = (const unsigned char *) src;
 #if 0 /* -mavx512f */
     while (n >= 64) {
-        _mm512_storeu_si512(dst, _mm512_loadu_si512(src));
+        _mm512_storeu_si512(d, _mm512_loadu_si512(s));
         s += 64;
         d += 64;
         n -= 64;
