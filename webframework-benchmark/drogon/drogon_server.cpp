@@ -1,8 +1,9 @@
 // g++ -O2 drogon_server.cpp -o drogon_server -I/usr/include/boost169 -ldrogon -ltrantor -lcrypto -lssl -luuid -ldl -lz -lpthread /usr/lib64/libboost_filesystem.so.1.69.0 /usr/local/lib64/libjsoncpp.a
 // ~33w/s, slightly slower than go-gin server. No difference after disabling server & date headers...
 #include <ctime>
+#include <unordered_map>
+#include <apr_thread_pool.h>
 #include <boost/asio.hpp>
-#include <apr-1/apr_thread_pool.h>
 #include <drogon/drogon.h>
 #include <soci/soci.h>
 using namespace std;
@@ -20,11 +21,16 @@ std::shared_ptr<connection_pool> init_connection_pool(size_t size = 5) {
     std::shared_ptr<connection_pool> p = std::make_shared<connection_pool>(size);
     for (int i = 0; i < size; i++) {
         session &sql = p->at(i);
-        sql.open("mysql://host=127.0.0.1 user=root password='123456' db=mysql charset=utf8 reconnect=1");
-        sql << "set time_zone = '+08:00'"; /* Asia/Shanghai */
-//        string tz;
-//        sql << "select @@session.time_zone", into(tz);
-//        cout << "i=" << i << ", tz=" << tz << endl;
+        try {
+            sql.open("mysql://host=192.168.233.1 user=root password='123456' db=mysql charset=utf8 reconnect=1");
+            sql << "set time_zone = '+08:00'"; /* Asia/Shanghai */
+//            string tz;
+//            sql << "select @@session.time_zone", into(tz);
+//            cout << "i=" << i << ", tz=" << tz << endl;
+        }
+        catch (soci_error& e) {
+            cerr << "SOCI error: " << e.what() << endl;
+        }
     }
     return p;
 }
@@ -60,9 +66,30 @@ std::shared_ptr<apr_thread_pool_t> init_thread_pool(size_t init = 10, size_t max
 int main()
 {
     std::shared_ptr<connection_pool> conn_pool = init_connection_pool(5);
-    /* also checked poco thread pool, but it is not friendly to lambda(temporary) functions. */
+    /*
+     * also checked:
+     * poco thread pool: not friendly to lambda(temporary) functions.
+     * wangle thread pool: too many dependencies...
+     */
     std::shared_ptr<apr_thread_pool_t> apr_thread_pool = init_thread_pool(10, 200);
     boost::asio::thread_pool boost_thread_pool(200);
+    std::unordered_map<intptr_t, drogon::ResponseStreamPtr> sse_map;
+    std::thread sse_server_thread([&sse_map] {
+        for (int i = 1; i <= 1000 * 1000; i++) {
+            this_thread::sleep_for(1s);
+            char buffer[32] = { 0 };
+            for (auto it = sse_map.begin(); it != sse_map.end(); ) {
+                std::snprintf(buffer, sizeof(buffer), "id: %d\ndata: datatata\n\n", i);
+                if (it->second->send(buffer)) {
+                    ++it;
+                } else {
+                    it->second->close();
+                    it = sse_map.erase(it);
+                }
+            }
+cout << "size=" << sse_map.size() << endl;
+        }
+    });
     app().registerPostHandlingAdvice(
         [](const drogon::HttpRequestPtr &req, const drogon::HttpResponsePtr &resp) {
             resp->addHeader("Access-Control-Allow-Origin", "*");
@@ -110,15 +137,14 @@ int main()
         {Get});
     app().registerHandler(
         "/sse",
-        [](const HttpRequestPtr &,
+        [&sse_map](const HttpRequestPtr &,
            std::function<void(const HttpResponsePtr &)> &&callback) {
-            int i = 0;
-            auto cb = [&i](char *buffer, size_t size) -> size_t {
-                this_thread::sleep_for(1s);
-                int c = std::snprintf(buffer, size, "id: %d\ndata: datatata\n\n", ++i);
-                return c;
-            };
-            auto resp = drogon::HttpResponse::newStreamResponse(cb, "", CT_CUSTOM, "text/event-stream");
+            /* drogon 1.9.2+ */
+            auto resp = drogon::HttpResponse::newAsyncStreamResponse(
+                [&sse_map](drogon::ResponseStreamPtr stream) {
+                    sse_map[(intptr_t)stream.get()] = std::move(stream);
+                });
+            resp->setContentTypeCodeAndCustomString(CT_CUSTOM, "text/event-stream");
             callback(resp);
         },
         {Get});
@@ -128,7 +154,7 @@ int main()
                 std::function<void(const HttpResponsePtr &)> &&callback) {
             /* pass in req to extend request lifecycle */
             auto tp = new tuple<req_t, callback_t>(req, std::move(callback));
-            apr_thread_pool_push(apr_thread_pool.get(), [](apr_thread_t *att, void *param) -> void *  {
+            apr_thread_pool_push(apr_thread_pool.get(), [](apr_thread_t *att, void *param) -> void * {
                 auto tp = (std::tuple<req_t, callback_t> *) param;
                 std::shared_ptr<std::tuple<req_t, callback_t>> stp(tp);
                 req_t req = std::get<0>(*tp);
