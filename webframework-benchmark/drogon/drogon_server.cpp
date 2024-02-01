@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <drogon/drogon.h>
 #include <soci/soci.h>
+#include <soci/mysql/soci-mysql.h>
 using namespace std;
 using namespace boost;
 using namespace drogon;
@@ -22,7 +23,12 @@ std::shared_ptr<connection_pool> init_connection_pool(size_t size = 5) {
     for (int i = 0; i < size; i++) {
         session &sql = p->at(i);
         try {
-            sql.open("mysql://host=192.168.233.1 user=root password='123456' db=mysql charset=utf8 reconnect=1");
+#ifdef WIN32
+            /* static load, otherwise libmysql.dll is not copied automatically. */
+            sql.open(soci::mysql, "host=127.0.0.1 user=root password='123456' db=mysql charset=utf8 reconnect=1");
+#else
+            sql.open("mysql://host=127.0.0.1 user=root password='123456' db=mysql charset=utf8 reconnect=1");
+#endif
             sql << "set time_zone = '+08:00'"; /* Asia/Shanghai */
 //            string tz;
 //            sql << "select @@session.time_zone", into(tz);
@@ -69,7 +75,7 @@ int main()
     /*
      * also checked:
      * poco thread pool: not friendly to lambda(temporary) functions.
-     * wangle thread pool: too many dependencies...
+     * folly thread pool: too many dependencies...
      */
     std::shared_ptr<apr_thread_pool_t> apr_thread_pool = init_thread_pool(10, 200);
     boost::asio::thread_pool boost_thread_pool(200);
@@ -87,7 +93,6 @@ int main()
                     it = sse_map.erase(it);
                 }
             }
-cout << "size=" << sse_map.size() << endl;
         }
     });
     app().registerPostHandlingAdvice(
