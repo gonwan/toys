@@ -1,0 +1,30 @@
+###
+POST http://localhost:8080/submit
+Content-Type: application/json
+
+{
+  "id": "111",
+  "author": "gonwan",
+  "url": "http://gonwan.com/111"
+}
+
+###
+GET http://localhost:8080/tasks?assignee=editors
+
+###
+POST http://localhost:8080/review
+Content-Type: application/json
+
+{
+  "id": "c86faf96-0fd4-11ee-9d30-0242c9a64bab",
+  "status": true
+}
+
+###
+GET http://localhost:8080/history/list
+
+###
+GET http://localhost:8080/history/get?id=c86d8caf-0fd4-11ee-9d30-0242c9a64bab
+
+###
+GET http://localhost:8080/definition/get?id=articleReview:2:c7651338-0fd3-11ee-8529-0242c9a64bab

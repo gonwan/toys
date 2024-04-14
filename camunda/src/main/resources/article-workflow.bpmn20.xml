@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_13s78h5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+	<bpmn:process id="articleReview" name="ArticleReview" isExecutable="true">
+		<bpmn:startEvent id="start">
+			<bpmn:outgoing>Flow_05iom50</bpmn:outgoing>
+		</bpmn:startEvent>
+		<bpmn:endEvent id="end">
+			<bpmn:incoming>Flow_0xmujue</bpmn:incoming>
+			<bpmn:incoming>Flow_0bjc8bv</bpmn:incoming>
+		</bpmn:endEvent>
+		<bpmn:userTask id="reviewArticle" name="Review the submitted tutorial" camunda:candidateGroups="editors">
+			<bpmn:incoming>Flow_05iom50</bpmn:incoming>
+			<bpmn:outgoing>Flow_1xfboa2</bpmn:outgoing>
+		</bpmn:userTask>
+		<bpmn:sequenceFlow id="Flow_05iom50" sourceRef="start" targetRef="reviewArticle" />
+		<bpmn:exclusiveGateway id="decision">
+			<bpmn:incoming>Flow_1xfboa2</bpmn:incoming>
+			<bpmn:outgoing>Flow_1c0awkw</bpmn:outgoing>
+			<bpmn:outgoing>Flow_1bzkeos</bpmn:outgoing>
+		</bpmn:exclusiveGateway>
+		<bpmn:sequenceFlow id="Flow_1xfboa2" sourceRef="reviewArticle" targetRef="decision" />
+		<bpmn:serviceTask id="tutorialApproved" name="Publish the approved tutorial" camunda:class="com.gonwan.toys.camunda.service.PublishArticleService">
+			<bpmn:incoming>Flow_1bzkeos</bpmn:incoming>
+			<bpmn:outgoing>Flow_0xmujue</bpmn:outgoing>
+		</bpmn:serviceTask>
+		<bpmn:serviceTask id="tutorialRejected" name="Send out rejection email" camunda:class="com.gonwan.toys.camunda.service.SendMailService">
+			<bpmn:incoming>Flow_1c0awkw</bpmn:incoming>
+			<bpmn:outgoing>Flow_0bjc8bv</bpmn:outgoing>
+		</bpmn:serviceTask>
+		<bpmn:sequenceFlow id="Flow_1c0awkw" sourceRef="decision" targetRef="tutorialRejected">
+			<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!approved}</bpmn:conditionExpression>
+		</bpmn:sequenceFlow>
+		<bpmn:sequenceFlow id="Flow_0xmujue" sourceRef="tutorialApproved" targetRef="end" />
+		<bpmn:sequenceFlow id="Flow_1bzkeos" sourceRef="decision" targetRef="tutorialApproved">
+			<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved}</bpmn:conditionExpression>
+		</bpmn:sequenceFlow>
+		<bpmn:sequenceFlow id="Flow_0bjc8bv" sourceRef="tutorialRejected" targetRef="end" />
+	</bpmn:process>
+	<bpmndi:BPMNDiagram id="BPMNDiagram_1">
+		<bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="articleReview">
+			<bpmndi:BPMNShape id="Gateway_12uxggy_di" bpmnElement="decision" isMarkerVisible="true">
+				<dc:Bounds x="415" y="195" width="50" height="50" />
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape id="Activity_0ly8fci_di" bpmnElement="reviewArticle">
+				<dc:Bounds x="270" y="180" width="100" height="80" />
+				<bpmndi:BPMNLabel />
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape id="Activity_1gq155x_di" bpmnElement="tutorialRejected">
+				<dc:Bounds x="520" y="250" width="100" height="80" />
+				<bpmndi:BPMNLabel />
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape id="Event_13sedzi_di" bpmnElement="start">
+				<dc:Bounds x="152" y="202" width="36" height="36" />
+				<bpmndi:BPMNLabel>
+					<dc:Bounds x="186" y="122" width="23" height="14" />
+				</bpmndi:BPMNLabel>
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape id="Activity_1oyqrqe_di" bpmnElement="tutorialApproved">
+				<dc:Bounds x="520" y="110" width="100" height="80" />
+				<bpmndi:BPMNLabel />
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNShape id="Event_1hredzi_di" bpmnElement="end">
+				<dc:Bounds x="782" y="202" width="36" height="36" />
+			</bpmndi:BPMNShape>
+			<bpmndi:BPMNEdge id="Flow_1xfboa2_di" bpmnElement="Flow_1xfboa2">
+				<di:waypoint x="370" y="220" />
+				<di:waypoint x="415" y="220" />
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge id="Flow_1c0awkw_di" bpmnElement="Flow_1c0awkw">
+				<di:waypoint x="440" y="245" />
+				<di:waypoint x="440" y="290" />
+				<di:waypoint x="520" y="290" />
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge id="Flow_1bzkeos_di" bpmnElement="Flow_1bzkeos">
+				<di:waypoint x="440" y="195" />
+				<di:waypoint x="440" y="150" />
+				<di:waypoint x="520" y="150" />
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge id="Flow_05iom50_di" bpmnElement="Flow_05iom50">
+				<di:waypoint x="188" y="220" />
+				<di:waypoint x="270" y="220" />
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge id="Flow_0bjc8bv_di" bpmnElement="Flow_0bjc8bv">
+				<di:waypoint x="620" y="290" />
+				<di:waypoint x="690" y="290" />
+				<di:waypoint x="690" y="220" />
+				<di:waypoint x="782" y="220" />
+				<bpmndi:BPMNLabel>
+					<dc:Bounds x="699" y="252" width="13" height="14" />
+				</bpmndi:BPMNLabel>
+			</bpmndi:BPMNEdge>
+			<bpmndi:BPMNEdge id="Flow_0xmujue_di" bpmnElement="Flow_0xmujue">
+				<di:waypoint x="620" y="150" />
+				<di:waypoint x="690" y="150" />
+				<di:waypoint x="690" y="220" />
+				<di:waypoint x="782" y="220" />
+			</bpmndi:BPMNEdge>
+		</bpmndi:BPMNPlane>
+	</bpmndi:BPMNDiagram>
+</bpmn:definitions>
