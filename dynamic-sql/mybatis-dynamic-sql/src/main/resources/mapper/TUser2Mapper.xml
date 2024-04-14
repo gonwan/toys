@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gonwan.toys.mybatis.mapper.TUser2ExMapper">
+    <resultMap id="TUser2JoinResult" type="com.gonwan.toys.mybatis.model.TUser2Ex">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <association property="tUser3" javaType="com.gonwan.toys.mybatis.generated.model.TUser3">
+            <id column="id3" jdbcType="BIGINT" property="id"/>
+            <result column="username3" jdbcType="VARCHAR" property="username"/>
+        </association>
+    </resultMap>
+</mapper>

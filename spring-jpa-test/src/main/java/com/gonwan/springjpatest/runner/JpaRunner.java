@@ -1,7 +1,7 @@
 package com.gonwan.springjpatest.runner;
 
 import com.gonwan.springjpatest.model.TUser;
-import com.gonwan.springjpatest.model.TUserRepository;
+import com.gonwan.springjpatest.repository.TUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
